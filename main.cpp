@@ -11,6 +11,10 @@ int main(int argc, char** argv) {
 
 	Lexer lexer(inFile, tokenStream);
 
+	while (lexer.canConsumeToken()) {
+		lexer.consumeNextToken();
+	}
+
 	inFile.close();
 
 	return 0;
