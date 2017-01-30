@@ -3,7 +3,7 @@ PROJECT		:= script_lang
 
 CXX			:= g++
 CXXFLAGS	:= -std=c++14 -c
-LDFLAGS		:= -static
+LDFLAGS		:= # -static # does not work due to school computer issues
 LDLIBS		:=
 
 output_file	:= bin/$(PROJECT)
