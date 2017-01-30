@@ -1,0 +1,14 @@
+let testVar = "hello"
+let otherVar=32.5
+
+let n1= .322
+let n2_ =0x34F
+
+fun doThing(a, b)
+	_print(a)
+	_print("test: " + b)
+
+	ret a + b
+end
+
+_print(doThing(testVar, n1))
