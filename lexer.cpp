@@ -2,8 +2,8 @@
 #include <sstream>
 #include <cctype>
 
-Lexer::Lexer(std::istream& textStream, TokenStream& tokenStream)
-: textStream(textStream), tokenStream(tokenStream) {}
+Lexer::Lexer(std::istream& textStream, Interpreter& interpreter)
+: textStream(textStream), interpreter(interpreter) {}
 
 void Lexer::consumeNextToken() {
 	char nextChar = textStream.peek();
@@ -44,7 +44,7 @@ void Lexer::consumeIdentifier() {
 	}
 	while (canConsumeToken() && !isWhitespace(textStream.peek()));
 
-	tokenStream.addToken(content.str(), Token::TokenType::IDENTIFIER);
+	interpreter.getTokenStream().addToken(content.str(), Token::TokenType::IDENTIFIER);
 }
 
 void Lexer::consumeNumericLiteral() {
@@ -55,7 +55,7 @@ void Lexer::consumeNumericLiteral() {
 	}
 	while (canConsumeToken() && isNumericLiteral(textStream.peek()));
 
-	tokenStream.addToken(content.str(), Token::TokenType::NUMERIC);
+	interpreter.getTokenStream().addToken(content.str(), Token::TokenType::NUMERIC);
 }
 
 void Lexer::consumeStringLiteral() {
@@ -78,7 +78,7 @@ void Lexer::consumeStringLiteral() {
 		}
 	}
 
-	tokenStream.addToken(content.str(), Token::TokenType::STRING);
+	interpreter.getTokenStream().addToken(content.str(), Token::TokenType::STRING);
 }
 
 void Lexer::consumeOperator() {
@@ -105,4 +105,8 @@ bool Lexer::isNumericLiteral(char chr) {
 
 bool Lexer::isStringLiteral(char chr) {
 	return chr == '"';
+}
+
+bool Lexer::isPossibleOperator(char chr) {
+	return false;
 }

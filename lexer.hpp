@@ -3,10 +3,13 @@
 #include <iostream>
 #include "token.hpp"
 #include "token-stream.hpp"
+#include "interpreter.hpp"
+
+class Interpreter;
 
 class Lexer {
 	public:
-		Lexer(std::istream& textStream, TokenStream& tokenStream);
+		Lexer(std::istream& textStream, Interpreter& interpreter);
 
 		/**
 		 * @brief consumes one token from the text stream and adds it to the token stream
@@ -18,7 +21,7 @@ class Lexer {
 		virtual ~Lexer() = default;
 	private:
 		std::istream& textStream;
-		TokenStream& tokenStream;
+		Interpreter& interpreter;
 
 		void consumeWhitespace();
 		void consumeIdentifier();
@@ -31,4 +34,5 @@ class Lexer {
 		static bool isIdentifier(char);
 		static bool isNumericLiteral(char);
 		static bool isStringLiteral(char); // TODO: add operator check
+		static bool isPossibleOperator(char);
 };
