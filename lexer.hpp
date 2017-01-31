@@ -26,8 +26,9 @@ class Lexer {
 		void consumeStringLiteral();
 		void consumeOperator();
 
-		static isWhitespace(char);
-		static isIdentifier(char);
-		static isNumericLiteral(char);
-		static isStringLiteral(char); // TODO: add operator check
+		static bool isWhitespace(char);
+		static bool isIdentifierStart(char);
+		static bool isIdentifier(char);
+		static bool isNumericLiteral(char);
+		static bool isStringLiteral(char); // TODO: add operator check
 };

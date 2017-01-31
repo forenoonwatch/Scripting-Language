@@ -1,4 +1,6 @@
 #include "lexer.hpp"
+#include <sstream>
+#include <cctype>
 
 Lexer::Lexer(std::istream& textStream, TokenStream& tokenStream)
 : textStream(textStream), tokenStream(tokenStream) {}
@@ -9,20 +11,98 @@ void Lexer::consumeNextToken() {
 	if (isWhitespace(nextChar)) {
 		consumeWhitespace();
 	}
-	else if (isIdentifier(nextChar)) {
+	else if (isIdentifierStart(nextChar)) {
 		consumeIdentifier();
 	}
-	else if (isNumericLiteral(nextChar)) {
+	else if (isNumericLiteral(nextChar) && nextChar != 'x') {
 		consumeNumericLiteral();
 	}
 	else if (isStringLiteral(nextChar)) {
 		consumeStringLiteral();
 	}
 	else {
-		consumeOperator(nextChar);
+		consumeOperator();
 	}
 }
 
 bool Lexer::canConsumeToken() const {
 	return !textStream.eof();
+}
+
+void Lexer::consumeWhitespace() {
+	do {
+		textStream.get(); // pass over whitespace in stream
+	}
+	while (canConsumeToken() && isIdentifier(textStream.peek()));
+}
+
+void Lexer::consumeIdentifier() {
+	std::stringstream content;
+
+	do {
+		content << textStream.get();
+	}
+	while (canConsumeToken() && !isWhitespace(textStream.peek()));
+
+	tokenStream.addToken(content.str(), Token::TokenType::IDENTIFIER);
+}
+
+void Lexer::consumeNumericLiteral() {
+	std::stringstream content;
+
+	do {
+		content << textStream.get();
+	}
+	while (canConsumeToken() && isNumericLiteral(textStream.peek()));
+
+	tokenStream.addToken(content.str(), Token::TokenType::NUMERIC);
+}
+
+void Lexer::consumeStringLiteral() {
+	std::stringstream content;
+	char nextChar;
+
+	content << textStream.get(); // consume first '"'
+
+	while (canConsumeToken()) {
+		nextChar = textStream.get();
+		content << nextChar;
+
+		if (nextChar == '\\') { // TODO: possibly auto-resolve escape characters
+			if (canConsumeToken()) {
+				content << textStream.get();
+			} // TODO: throw syntax error for unexpected end to character
+		}
+		else if (isStringLiteral(nextChar)) {
+			break;
+		}
+	}
+
+	tokenStream.addToken(content.str(), Token::TokenType::STRING);
+}
+
+void Lexer::consumeOperator() {
+	// TODO: implement this method
+	textStream.get();
+}
+
+bool Lexer::isWhitespace(char chr) {
+	return isspace(chr);
+}
+
+bool Lexer::isIdentifierStart(char chr) {
+	return isalpha(chr) || chr == '_';
+}
+
+bool Lexer::isIdentifier(char chr) {
+	return isalnum(chr) || chr == '_';
+}
+
+bool Lexer::isNumericLiteral(char chr) {
+	// Hexadecimal support
+	return isdigit(chr) || isxdigit(chr) || chr == 'x' || chr == '.';
+}
+
+bool Lexer::isStringLiteral(char chr) {
+	return chr == '"';
 }

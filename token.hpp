@@ -5,8 +5,8 @@
 class Token {
 	public:
 		enum TokenType {
-			KEYWORD,
-			NUMBER,
+			IDENTIFIER,
+			NUMERIC,
 			STRING,
 			OPERATOR
 		};
