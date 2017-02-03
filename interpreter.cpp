@@ -7,4 +7,8 @@ void Interpreter::parseText() {
 	while (lexer->canConsumeToken()) {
 		lexer->consumeNextToken();
 	}
+
+	while (tokenStream.canGet()) {
+		std::cout << tokenStream.get().getContent() << std::endl;
+	}
 }

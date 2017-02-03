@@ -6,7 +6,7 @@
 
 class TokenStream {
 	public:
-		TokenStream() = default;
+		TokenStream();
 
 		void addToken(const std::string& content, Token::TokenType tokenType);
 		void addToken(Token token);
@@ -14,8 +14,10 @@ class TokenStream {
 		Token peek() const;
 		Token get();
 
+		bool canGet() const;
+
 		virtual ~TokenStream() = default;
 	private:
 		std::vector<Token> tokens;
-		std::vector<Token>::iterator streamI;
+		unsigned streamI;
 };
