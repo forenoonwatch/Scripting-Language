@@ -40,9 +40,9 @@ void Lexer::consumeIdentifier() {
 	std::stringstream content;
 
 	do {
-		content << textStream.get();
+		content << static_cast<char>(textStream.get());
 	}
-	while (canConsumeToken() && !isWhitespace(textStream.peek()));
+	while (canConsumeToken() && isIdentifier(textStream.peek()));
 
 	interpreter.getTokenStream().addToken(content.str(), Token::TokenType::IDENTIFIER);
 }
@@ -51,7 +51,7 @@ void Lexer::consumeNumericLiteral() {
 	std::stringstream content;
 
 	do {
-		content << textStream.get();
+		content << static_cast<char>(textStream.get());
 	}
 	while (canConsumeToken() && isNumericLiteral(textStream.peek()));
 
@@ -62,7 +62,7 @@ void Lexer::consumeStringLiteral() {
 	std::stringstream content;
 	char nextChar;
 
-	content << textStream.get(); // consume first '"'
+	content << static_cast<char>(textStream.get()); // consume first '"'
 
 	while (canConsumeToken()) {
 		nextChar = textStream.get();
@@ -70,7 +70,7 @@ void Lexer::consumeStringLiteral() {
 
 		if (nextChar == '\\') { // TODO: possibly auto-resolve escape characters
 			if (canConsumeToken()) {
-				content << textStream.get();
+				content << static_cast<char>(textStream.get());
 			} // TODO: throw syntax error for unexpected end to character
 		}
 		else if (isStringLiteral(nextChar)) {

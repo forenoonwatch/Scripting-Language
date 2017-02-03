@@ -9,6 +9,6 @@ void Interpreter::parseText() {
 	}
 
 	while (tokenStream.canGet()) {
-		std::cout << tokenStream.get().getContent() << std::endl;
+		std::cout << "[" << tokenStream.get().getContent() << "]" << std::endl;
 	}
 }
