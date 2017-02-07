@@ -21,6 +21,8 @@ class Interpreter {
 		TokenStream tokenStream;
 		OperatorRegistry operatorRegistry;
 		std::unique_ptr<Lexer> lexer;
+
+		friend class Lexer;
 };
 
 #include "interpreter.inl"

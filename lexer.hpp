@@ -34,5 +34,4 @@ class Lexer {
 		static bool isIdentifier(char);
 		static bool isNumericLiteral(char);
 		static bool isStringLiteral(char); // TODO: add operator check
-		static bool isPossibleOperator(char);
 };

@@ -33,7 +33,7 @@ void Lexer::consumeWhitespace() {
 	do {
 		textStream.get(); // pass over whitespace in stream
 	}
-	while (canConsumeToken() && isIdentifier(textStream.peek()));
+	while (canConsumeToken() && isWhitespace(textStream.peek()));
 }
 
 void Lexer::consumeIdentifier() {
@@ -44,7 +44,7 @@ void Lexer::consumeIdentifier() {
 	}
 	while (canConsumeToken() && isIdentifier(textStream.peek()));
 
-	interpreter.getTokenStream().addToken(content.str(), Token::TokenType::IDENTIFIER);
+	interpreter.tokenStream.addToken(content.str(), Token::TokenType::IDENTIFIER);
 }
 
 void Lexer::consumeNumericLiteral() {
@@ -55,7 +55,7 @@ void Lexer::consumeNumericLiteral() {
 	}
 	while (canConsumeToken() && isNumericLiteral(textStream.peek()));
 
-	interpreter.getTokenStream().addToken(content.str(), Token::TokenType::NUMERIC);
+	interpreter.tokenStream.addToken(content.str(), Token::TokenType::NUMERIC);
 }
 
 void Lexer::consumeStringLiteral() {
@@ -78,12 +78,28 @@ void Lexer::consumeStringLiteral() {
 		}
 	}
 
-	interpreter.getTokenStream().addToken(content.str(), Token::TokenType::STRING);
+	interpreter.tokenStream.addToken(content.str(), Token::TokenType::STRING);
 }
 
 void Lexer::consumeOperator() {
-	// TODO: implement this method
-	textStream.get();
+	std::stringstream content;
+	char nextChar;
+
+	content << static_cast<char>(textStream.get());
+
+	do {
+		nextChar = textStream.peek();
+
+		if (!interpreter.operatorRegistry.isValidOperator(content.str() + nextChar)) {
+			// TODO: check here to make sure current formed token is a valid operator and throw error otherwise
+			interpreter.tokenStream.addToken(content.str(), Token::TokenType::OPERATOR);
+			break;
+		}
+		else {
+			content << static_cast<char>(textStream.get());
+		}
+	}
+	while (interpreter.operatorRegistry.isValidOperatorChar(nextChar));
 }
 
 bool Lexer::isWhitespace(char chr) {
@@ -105,8 +121,4 @@ bool Lexer::isNumericLiteral(char chr) {
 
 bool Lexer::isStringLiteral(char chr) {
 	return chr == '"';
-}
-
-bool Lexer::isPossibleOperator(char chr) {
-	return false;
 }

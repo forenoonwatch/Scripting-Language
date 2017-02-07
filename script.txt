@@ -1,3 +1,4 @@
+
 let testVar = "hello"
 let otherVar=32.5
 
@@ -8,7 +9,11 @@ fun doThing(a, b)
 	_print(a)
 	_print("test: " + b)
 
-	ret a + b
+	if a + b >= 17 then
+		ret a + b
+	else
+		ret a - b
+	end
 end
 
 _print(doThing(testVar, n1))
