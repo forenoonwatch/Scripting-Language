@@ -4,6 +4,12 @@
 
 class Operator {
 	public:
+		enum OperatorType {
+			UNARY,
+			BINARY,
+			OTHER
+		};
+
 		Operator(const std::string& label); // TODO: add action
 
 		std::string getLabel() const;

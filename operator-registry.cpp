@@ -1,8 +1,13 @@
 #include "operator-registry.hpp"
 
 OperatorRegistry::OperatorRegistry() {
+	// TODO: replace with correct code for giving operators functionality
 	addOperator(std::make_shared<Operator>("="));
 	addOperator(std::make_shared<Operator>("~"));
+	addOperator(std::make_shared<Operator>("("));
+	addOperator(std::make_shared<Operator>(")"));
+	addOperator(std::make_shared<Operator>(","));
+	addOperator(std::make_shared<Operator>(";"));
 
 	addOperator(std::make_shared<Operator>("+"));
 	addOperator(std::make_shared<Operator>("-")); // TODO: figure out how to do unary -

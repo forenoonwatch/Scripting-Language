@@ -30,8 +30,16 @@ bool Lexer::canConsumeToken() const {
 }
 
 void Lexer::consumeWhitespace() {
+	char nextChar;
+	bool createdEndline = false;
+
 	do {
-		textStream.get(); // pass over whitespace in stream
+		nextChar = textStream.get();
+
+		if (!createdEndline && nextChar == '\n') {
+			createdEndline = true;
+			interpreter.tokenStream.addToken(";", Token::TokenType::OPERATOR);
+		}
 	}
 	while (canConsumeToken() && isWhitespace(textStream.peek()));
 }
@@ -83,9 +91,14 @@ void Lexer::consumeStringLiteral() {
 
 void Lexer::consumeOperator() {
 	std::stringstream content;
-	char nextChar;
+	char nextChar = textStream.get();
 
-	content << static_cast<char>(textStream.get());
+	if (interpreter.operatorRegistry.isValidOperatorChar(nextChar)) {
+		content << nextChar;
+	}
+	else {
+		// TODO: throw error for invalid operator
+	}
 
 	do {
 		nextChar = textStream.peek();

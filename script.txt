@@ -1,6 +1,5 @@
-
 let testVar = "hello"
-let otherVar=32.5
+let otherVar=-32.5
 
 let n1= .322
 let n2_ =0x34F
