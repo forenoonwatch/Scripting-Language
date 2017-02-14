@@ -18,6 +18,8 @@ class Statement {
 		void addChild(std::shared_ptr<Statement> child);
 		void addToken(Token token);
 
+		Statement& getParent();
+
 		virtual ~Statement() = default;
 	private:
 		StatementType type;
@@ -26,3 +28,5 @@ class Statement {
 		std::vector<std::shared_ptr<Statement>> children;
 		std::vector<Token> tokens;
 };
+
+#include "statement.inl"
