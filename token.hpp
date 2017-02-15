@@ -8,7 +8,8 @@ class Token {
 			IDENTIFIER,
 			NUMERIC,
 			STRING,
-			OPERATOR
+			OPERATOR,
+			OTHER
 		};
 
 		Token(const std::string& content, TokenType tokenType);

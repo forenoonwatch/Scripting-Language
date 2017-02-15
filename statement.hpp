@@ -18,7 +18,9 @@ class Statement {
 		void addChild(std::shared_ptr<Statement> child);
 		void addToken(Token token);
 
-		Statement& getParent();
+		std::shared_ptr<Statement> getParent();
+		std::vector<std::shared_ptr<Statement>>& getChildren();
+		std::vector<Token>& getTokens();
 
 		virtual ~Statement() = default;
 	private:

@@ -1,7 +1,7 @@
 #include "statement.hpp"
 
-Statement::Statement(std::shared_ptr<Statement> parent)
-: parent(parent) {}
+Statement::Statement(StatementType type, std::shared_ptr<Statement> parent)
+: type(type), parent(parent) {}
 
 void Statement::addChild(std::shared_ptr<Statement> child) {
 	child->parent = std::make_shared<Statement>(*this);

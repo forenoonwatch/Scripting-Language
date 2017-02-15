@@ -38,7 +38,7 @@ void Lexer::consumeWhitespace() {
 
 		if (!createdEndline && nextChar == '\n') {
 			createdEndline = true;
-			interpreter.tokenStream.addToken(";", Token::TokenType::OPERATOR);
+			//interpreter.tokenStream.addToken(";", Token::TokenType::OPERATOR);
 		}
 	}
 	while (canConsumeToken() && isWhitespace(textStream.peek()));

@@ -23,10 +23,10 @@ void Parser::consumeNextStatement() {
 }
 
 void Parser::consumeVarDeclaration() {
-	Statement varDecl(Statement::StatementType::VAR_DECLARATION, currRoot);
+	std::shared_ptr<Statement> varDecl = std::make_shared<Statement>(Statement::StatementType::VAR_DECLARATION, currRoot);
 	currRoot = varDecl;
 
-	interpeter.tokenStream.get(); // ignore let token
+	interpreter.tokenStream.get(); // ignore let token
 
 	Token nextToken = interpreter.tokenStream.peek();
 
@@ -34,40 +34,54 @@ void Parser::consumeVarDeclaration() {
 		return;
 	}
 
-	currRootl.addToken(interpreter.tokenStream.get());
+	currRoot->addToken(interpreter.tokenStream.get());
 
-	while (tokenStream.canGet()) {
+	Token::TokenType lastTokenType = Token::TokenType::OTHER;
+
+	while (interpreter.tokenStream.canGet()) {
 		nextToken = interpreter.tokenStream.peek();
 
 		if (acceptToken(nextToken, Token::TokenType::IDENTIFIER)) {
-			varDecl.addToken(interpreter.tokenStream.get());
+			if (lastTokenType != Token::TokenType::IDENTIFIER) {
+				currRoot->addToken(interpreter.tokenStream.get());
+			}
+			else {
+				// finished parsing
+				break;
+			}
 		}
 		else if (acceptToken(nextToken, Token::TokenType::OPERATOR, "(")) {
-			currRoot = Statement(Statement::StatementType::OTHER, currRoot);
-			currRoot.addToken(interpreter.tokenStream.get());
+			currRoot->addToken(nextToken);
+
+			currRoot = std::make_shared<Statement>(Statement::StatementType::OTHER, currRoot);
+			currRoot->addToken(interpreter.tokenStream.get());
 		}
 		else if (acceptToken(nextToken, Token::TokenType::OPERATOR, ")")) {
 			if (currRoot != varDecl) {
-				currRoot.addToken(interpreter.tokenStream.get());
-				currRoot = currRoot.getParent();
+				currRoot->addToken(interpreter.tokenStream.get());
+				currRoot = currRoot->getParent();
 			}
 			else {
 				// error: extra )
+				break;
 			}
 		}
 		else if (acceptToken(nextToken, Token::TokenType::OPERATOR)) {
-			varDecl.addToken(interpreter.tokenStream.get());
+			currRoot->addToken(interpreter.tokenStream.get());
 		}
 		else {
 			// error: invalid token
+			break;
 		}
+
+		lastTokenType = nextToken.getTokenType();
 	}
 
 	currRoot = varDecl; // go back up from going down in the rhs
 }
 
 bool Parser::acceptToken(const Token& token, Token::TokenType type) {
-	if (!tokenStream.canGet()) {
+	if (!interpreter.tokenStream.canGet()) {
 		return false;
 	}
 
@@ -80,11 +94,11 @@ bool Parser::acceptToken(const Token& token, Token::TokenType type) {
 }
 
 bool Parser::acceptToken(const Token& token, Token::TokenType type, const std::string& content) {
-	if (!tokenStream.canGet()) {
+	if (!interpreter.tokenStream.canGet()) {
 		return false;
 	}
 
-	if (token.getTokenType() != type || token.compare(content) != 0) {
+	if (token.getTokenType() != type || token.getContent().compare(content) != 0) {
 		std::cerr << "Error: expected " << content << ", got " << token.getContent() << std::endl;
 		return false;
 	}
