@@ -1,13 +1,21 @@
 #include "statement.hpp"
 
-Statement::Statement(StatementType type, std::shared_ptr<Statement> parent)
-: type(type), parent(parent) {}
+Statement::Statement(StatementType type, Statement* parent)
+: type(type), parent(parent) {
+	if (parent != nullptr) {
+		parent->addChild(this);
+	}
+}
 
-void Statement::addChild(std::shared_ptr<Statement> child) {
-	child->parent = std::make_shared<Statement>(*this);
+void Statement::addChild(Statement* child) {
+	child->parent = this;
 	children.push_back(child);
 }
 
 void Statement::addToken(Token token) {
 	tokens.push_back(token);
+}
+
+std::string Statement::typeAsSrting(StatementType type) {
+	//TODO: implement
 }

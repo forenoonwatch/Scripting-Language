@@ -1,9 +1,9 @@
 
-inline std::shared_ptr<Statement> Statement::getParent() {
+inline Statement* Statement::getParent() {
 	return parent;
 }
 
-inline std::vector<std::shared_ptr<Statement>>& Statement::getChildren() {
+inline std::vector<Statement*>& Statement::getChildren() {
 	return children;
 }
 

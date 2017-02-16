@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <memory>
 #include "interpreter.hpp"
 #include "token.hpp"
 #include "statement.hpp"
@@ -17,12 +16,15 @@ class Parser {
 		virtual ~Parser() = default;
 	private:
 		Interpreter& interpreter;
-		std::shared_ptr<Statement> root;
-		std::shared_ptr<Statement> currRoot;
+		Statement* root;
+		Statement* currRoot;
 
 		void consumeVarDeclaration();
 		void consumeIfStatement();
 		void consumeFunDeclaration();
+
+		void consumeExpression();
+		void consumeFunctionHead();
 
 		bool acceptToken(const Token&, unsigned);
 		bool acceptToken(const Token&, Token::TokenType, const std::string&);

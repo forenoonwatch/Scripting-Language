@@ -2,19 +2,20 @@
 #include <iostream>
 
 namespace {
-	void printAllChildren(std::shared_ptr<Statement> st, int depth = 0) {
+	void printAllChildren(Statement* st, int depth = 0) {
 		auto it = std::begin(st->getChildren());
 		auto end = std::end(st->getChildren());
 
 		while (it != end) {
+			std::cout << "|";
+
 			for (int i = 0; i < depth; ++i) {
-				std::cout << " ";
+				std::cout << "\t";
 			}
 
-			std::cout << "| ";
 
 			for (auto tStart = std::begin((*it)->getTokens()); tStart != std::end((*it)->getTokens()); ++tStart) {
-				std::cout << tStart->getContent() << ", ";
+				std::cout << "[" << tStart->getContent() << "]" << ", ";
 			}
 
 			std::cout << std::endl;

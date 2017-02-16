@@ -1,7 +1,7 @@
 #include "parser.hpp"
 
 Parser::Parser(Interpreter& interpreter)
-: interpreter(interpreter), root(std::make_shared<Statement>()), currRoot(root) {}
+: interpreter(interpreter), root(new Statement()), currRoot(root) {}
 
 void Parser::consumeNextStatement() {
 	Token nextToken = interpreter.tokenStream.peek();
@@ -23,9 +23,7 @@ void Parser::consumeNextStatement() {
 }
 
 void Parser::consumeVarDeclaration() {
-	std::shared_ptr<Statement> varDecl =
-		std::make_shared<Statement>(Statement::StatementType::VAR_DECLARATION, currRoot);
-	currRoot->addChild(varDecl);
+	Statement* varDecl = new Statement(Statement::StatementType::VAR_DECLARATION, currRoot);
 	currRoot = varDecl;
 
 	interpreter.tokenStream.get(); // ignore let token
@@ -49,7 +47,7 @@ void Parser::consumeVarDeclaration() {
 
 	Token::TokenType lastTokenType = Token::TokenType::OTHER;
 
-	// begin parsing rhs
+	// begin parsing rhs; TODO: move to consumeExpression()
 	while (interpreter.tokenStream.canGet()) {
 		nextToken = interpreter.tokenStream.peek();
 
@@ -67,12 +65,15 @@ void Parser::consumeVarDeclaration() {
 			}
 		}
 		else if (acceptToken(nextToken, Token::TokenType::OPERATOR, "(")) {
-			currRoot->addToken(interpreter.tokenStream.get());
+			if (lastTokenType == Token::TokenType::IDENTIFIER) {
+				consumeFunctionHead();
+			}
+			else {
+				currRoot->addToken(interpreter.tokenStream.get());
 
-			std::shared_ptr<Statement> paren = std::make_shared<Statement>(Statement::StatementType::OTHER,
-				currRoot);
-			currRoot->addChild(paren);
-			currRoot = paren;
+				Statement* paren = new Statement(Statement::StatementType::GROUPING, currRoot);
+				currRoot = paren;
+			}
 		}
 		else if (acceptToken(nextToken, Token::TokenType::OPERATOR, ")")) {
 			if (currRoot != varDecl) {
@@ -98,6 +99,45 @@ void Parser::consumeVarDeclaration() {
 	}
 
 	currRoot = varDecl; // go back up from going down in the rhs
+}
+
+void Parser::consumeExpression() {
+	//TODO: copy paste parsing of rhs stuff into here
+}
+
+void Parser::consumeFunctionHead() {
+	Statement* funcHead = new Statement(Statement::StatementType::FUNC_HEAD, currRoot);
+	currRoot = funcHead;
+
+	Token nextToken = interpreter.tokenStream.peek();
+
+	if (!acceptToken(nextToken, Token::TokenType::IDENTIFIER)) {
+		std::cerr << "Error: expected identifier for function head" << std::endl;
+		return;
+	}
+
+	currRoot->addToken(interpreter.tokenStream.get());
+	nextToken = interpreter.tokenStream.peek();
+
+	if (!acceptToken(nextToken, Token::TokenType::OPERATOR, "(")) {
+		std::cerr << "Error: expected ( after identifier" << std::endl;
+		return;
+	}
+
+	currRoot->addToken(interpreter.tokenStream.get());
+	nextToken = interpreter.tokenStream.peek();
+
+	// [ident] [(] [expression] [,] [expression] [,] ... [)]
+	//consumeExpression();
+
+	/*
+	while (can consume) {
+		consume [expression]; else error
+		try consume [,]; else try consume [)]; else error
+	}
+	*/
+
+	currRoot = funcHead;
 }
 
 bool Parser::acceptToken(const Token& token, unsigned type) {

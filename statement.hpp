@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <vector>
 #include "token.hpp"
 
@@ -9,25 +8,30 @@ class Statement {
 		enum StatementType {
 			VAR_DECLARATION,
 			VAR_ASSIGNMENT,
+			EXPRESSION,
+			FUNC_HEAD,
+			GROUPING,
 			CONDITIONAL,
 			OTHER
 		};
 		
-		Statement(StatementType type = OTHER, std::shared_ptr<Statement> parent = nullptr);
+		Statement(StatementType type = OTHER, Statement* parent = nullptr);
 
-		void addChild(std::shared_ptr<Statement> child);
+		void addChild(Statement* child);
 		void addToken(Token token);
 
-		std::shared_ptr<Statement> getParent();
-		std::vector<std::shared_ptr<Statement>>& getChildren();
+		Statement* getParent();
+		std::vector<Statement*>& getChildren();
 		std::vector<Token>& getTokens();
 
 		virtual ~Statement() = default;
+
+		static std::string typeAsString(StatementType type);
 	private:
 		StatementType type;
 
-		std::shared_ptr<Statement> parent;
-		std::vector<std::shared_ptr<Statement>> children;
+		Statement* parent;
+		std::vector<Statement*> children;
 		std::vector<Token> tokens;
 };
 
