@@ -24,7 +24,7 @@ class Parser {
 		void consumeIfStatement();
 		void consumeFunDeclaration();
 
-		bool acceptToken(const Token&, Token::TokenType);
+		bool acceptToken(const Token&, unsigned);
 		bool acceptToken(const Token&, Token::TokenType, const std::string&);
 
 		friend class Interpreter;

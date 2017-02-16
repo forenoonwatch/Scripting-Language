@@ -4,12 +4,12 @@
 
 class Token {
 	public:
-		enum TokenType {
-			IDENTIFIER,
-			NUMERIC,
-			STRING,
-			OPERATOR,
-			OTHER
+		enum TokenType : unsigned {
+			IDENTIFIER = 0x001,
+			NUMERIC = 0x002,
+			STRING = 0x004,
+			OPERATOR = 0x008,
+			OTHER = 0x010
 		};
 
 		Token(const std::string& content, TokenType tokenType);

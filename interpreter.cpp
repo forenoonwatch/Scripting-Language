@@ -13,7 +13,7 @@ namespace {
 
 			std::cout << "| ";
 
-			for (auto tStart = std::begin(it->getTokens()); tStart != std::end(it->getTokens()); ++tStart) {
+			for (auto tStart = std::begin((*it)->getTokens()); tStart != std::end((*it)->getTokens()); ++tStart) {
 				std::cout << tStart->getContent() << ", ";
 			}
 
@@ -35,9 +35,13 @@ void Interpreter::parseText() {
 		lexer->consumeNextToken();
 	}
 
+	parser->consumeNextStatement();
+
 	//while (tokenStream.canGet()) {
 		//std::cout << "[" << tokenStream.get().getContent() << "]" << std::endl;
 	//}
+
+	std::cout << parser->root->getChildren().size() << std::endl;
 
 	printAllChildren(parser->root);
 }

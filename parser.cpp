@@ -1,7 +1,7 @@
 #include "parser.hpp"
 
 Parser::Parser(Interpreter& interpreter)
-: interpreter(interpreter), currRoot(root) {}
+: interpreter(interpreter), root(std::make_shared<Statement>()), currRoot(root) {}
 
 void Parser::consumeNextStatement() {
 	Token nextToken = interpreter.tokenStream.peek();
@@ -23,13 +23,24 @@ void Parser::consumeNextStatement() {
 }
 
 void Parser::consumeVarDeclaration() {
-	std::shared_ptr<Statement> varDecl = std::make_shared<Statement>(Statement::StatementType::VAR_DECLARATION, currRoot);
+	std::shared_ptr<Statement> varDecl =
+		std::make_shared<Statement>(Statement::StatementType::VAR_DECLARATION, currRoot);
+	currRoot->addChild(varDecl);
 	currRoot = varDecl;
 
 	interpreter.tokenStream.get(); // ignore let token
 
 	Token nextToken = interpreter.tokenStream.peek();
 
+	// check and consume variable name
+	if (!acceptToken(nextToken, Token::TokenType::IDENTIFIER)) {
+		return;
+	}
+
+	currRoot->addToken(interpreter.tokenStream.get());
+	nextToken = interpreter.tokenStream.peek();
+
+	// check and consume operator=
 	if (!acceptToken(nextToken, Token::TokenType::OPERATOR, "=")) {
 		return;
 	}
@@ -38,23 +49,30 @@ void Parser::consumeVarDeclaration() {
 
 	Token::TokenType lastTokenType = Token::TokenType::OTHER;
 
+	// begin parsing rhs
 	while (interpreter.tokenStream.canGet()) {
 		nextToken = interpreter.tokenStream.peek();
 
-		if (acceptToken(nextToken, Token::TokenType::IDENTIFIER)) {
-			if (lastTokenType != Token::TokenType::IDENTIFIER) {
-				currRoot->addToken(interpreter.tokenStream.get());
+		if (acceptToken(nextToken,
+				Token::TokenType::IDENTIFIER | Token::TokenType::NUMERIC | Token::TokenType::STRING)) {
+		
+			if (lastTokenType & (Token::TokenType::IDENTIFIER
+					| Token::TokenType::NUMERIC | Token::TokenType::STRING)) {
+				// finished parsing
+				std::cout << "last token type: " << lastTokenType << std::endl;
+				break;
 			}
 			else {
-				// finished parsing
-				break;
+				currRoot->addToken(interpreter.tokenStream.get());
 			}
 		}
 		else if (acceptToken(nextToken, Token::TokenType::OPERATOR, "(")) {
-			currRoot->addToken(nextToken);
-
-			currRoot = std::make_shared<Statement>(Statement::StatementType::OTHER, currRoot);
 			currRoot->addToken(interpreter.tokenStream.get());
+
+			std::shared_ptr<Statement> paren = std::make_shared<Statement>(Statement::StatementType::OTHER,
+				currRoot);
+			currRoot->addChild(paren);
+			currRoot = paren;
 		}
 		else if (acceptToken(nextToken, Token::TokenType::OPERATOR, ")")) {
 			if (currRoot != varDecl) {
@@ -63,6 +81,7 @@ void Parser::consumeVarDeclaration() {
 			}
 			else {
 				// error: extra )
+				std::cerr << "ERROR: extra )" << std::endl;
 				break;
 			}
 		}
@@ -71,6 +90,7 @@ void Parser::consumeVarDeclaration() {
 		}
 		else {
 			// error: invalid token
+			std::cerr << "ERROR: invalid token" << std::endl;
 			break;
 		}
 
@@ -80,17 +100,12 @@ void Parser::consumeVarDeclaration() {
 	currRoot = varDecl; // go back up from going down in the rhs
 }
 
-bool Parser::acceptToken(const Token& token, Token::TokenType type) {
+bool Parser::acceptToken(const Token& token, unsigned type) {
 	if (!interpreter.tokenStream.canGet()) {
 		return false;
 	}
 
-	if (token.getTokenType() != type) {
-		std::cerr << "Error: token type mismatch on " << token.getContent() << std::endl;
-		return false;
-	}
-
-	return true;
+	return token.getTokenType() & type;
 }
 
 bool Parser::acceptToken(const Token& token, Token::TokenType type, const std::string& content) {
@@ -98,10 +113,5 @@ bool Parser::acceptToken(const Token& token, Token::TokenType type, const std::s
 		return false;
 	}
 
-	if (token.getTokenType() != type || token.getContent().compare(content) != 0) {
-		std::cerr << "Error: expected " << content << ", got " << token.getContent() << std::endl;
-		return false;
-	}
-
-	return true;
+	return token.getTokenType() == type && token.getContent().compare(content) == 0;
 }
