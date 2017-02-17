@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include "token.hpp"
 
 class Statement {
@@ -9,7 +10,7 @@ class Statement {
 			VAR_DECLARATION,
 			VAR_ASSIGNMENT,
 			EXPRESSION,
-			FUNC_HEAD,
+			FUNC_CALL,
 			GROUPING,
 			CONDITIONAL,
 			OTHER

@@ -45,44 +45,54 @@ void Parser::consumeVarDeclaration() {
 
 	currRoot->addToken(interpreter.tokenStream.get());
 
+	// begin parsing rhs; TODO: move to consumeExpression()
+	consumeExpression();
+
+	currRoot = varDecl; // go back up from going down in the rhs
+}
+
+void Parser::consumeExpression() {
+	Token nextToken = interpreter.tokenStream.peek();
 	Token::TokenType lastTokenType = Token::TokenType::OTHER;
 
-	// begin parsing rhs; TODO: move to consumeExpression()
+	Statement* baseRoot = currRoot;
+
 	while (interpreter.tokenStream.canGet()) {
 		nextToken = interpreter.tokenStream.peek();
 
 		if (acceptToken(nextToken,
 				Token::TokenType::IDENTIFIER | Token::TokenType::NUMERIC | Token::TokenType::STRING)) {
-		
-			if (lastTokenType & (Token::TokenType::IDENTIFIER
-					| Token::TokenType::NUMERIC | Token::TokenType::STRING)) {
-				// finished parsing
-				std::cout << "last token type: " << lastTokenType << std::endl;
-				break;
+			if (interpreter.tokenStream.canGetNext()
+					&& acceptToken(interpreter.tokenStream.peekNext(), Token::TokenType::OPERATOR, "(")) {
+				currRoot->addToken(nextToken);
+				consumeFunctionCall();
 			}
 			else {
-				currRoot->addToken(interpreter.tokenStream.get());
+				if (lastTokenType & (Token::TokenType::IDENTIFIER
+						| Token::TokenType::NUMERIC | Token::TokenType::STRING)) {
+					// finished parsing
+					std::cout << "last token type: " << lastTokenType << std::endl;
+					break;
+				}
+				else {
+					currRoot->addToken(interpreter.tokenStream.get());
+				}
 			}
 		}
 		else if (acceptToken(nextToken, Token::TokenType::OPERATOR, "(")) {
-			if (lastTokenType == Token::TokenType::IDENTIFIER) {
-				consumeFunctionHead();
-			}
-			else {
-				currRoot->addToken(interpreter.tokenStream.get());
+			currRoot->addToken(interpreter.tokenStream.get());
 
-				Statement* paren = new Statement(Statement::StatementType::GROUPING, currRoot);
-				currRoot = paren;
-			}
+			Statement* paren = new Statement(Statement::StatementType::GROUPING, currRoot);
+			currRoot = paren;
 		}
 		else if (acceptToken(nextToken, Token::TokenType::OPERATOR, ")")) {
-			if (currRoot != varDecl) {
+			if (currRoot != baseRoot) {
 				currRoot->addToken(interpreter.tokenStream.get());
 				currRoot = currRoot->getParent();
 			}
 			else {
 				// error: extra )
-				std::cerr << "ERROR: extra )" << std::endl;
+				//std::cerr << "ERROR: extra )" << std::endl;
 				break;
 			}
 		}
@@ -98,15 +108,11 @@ void Parser::consumeVarDeclaration() {
 		lastTokenType = nextToken.getTokenType();
 	}
 
-	currRoot = varDecl; // go back up from going down in the rhs
+	currRoot = baseRoot;
 }
 
-void Parser::consumeExpression() {
-	//TODO: copy paste parsing of rhs stuff into here
-}
-
-void Parser::consumeFunctionHead() {
-	Statement* funcHead = new Statement(Statement::StatementType::FUNC_HEAD, currRoot);
+void Parser::consumeFunctionCall() {
+	Statement* funcHead = new Statement(Statement::StatementType::FUNC_CALL, currRoot);
 	currRoot = funcHead;
 
 	Token nextToken = interpreter.tokenStream.peek();
@@ -125,19 +131,25 @@ void Parser::consumeFunctionHead() {
 	}
 
 	currRoot->addToken(interpreter.tokenStream.get());
-	nextToken = interpreter.tokenStream.peek();
 
-	// [ident] [(] [expression] [,] [expression] [,] ... [)]
-	//consumeExpression();
+	while (interpreter.tokenStream.canGet()) {
+		consumeExpression();
+		nextToken = interpreter.tokenStream.peek();
 
-	/*
-	while (can consume) {
-		consume [expression]; else error
-		try consume [,]; else try consume [)]; else error
+		if (acceptToken(nextToken, Token::TokenType::OPERATOR, ",")) {
+			currRoot->addToken(interpreter.tokenStream.get()); // continue onward
+		}
+		else if (acceptToken(nextToken, Token::TokenType::OPERATOR, ")")) {
+			currRoot->addToken(interpreter.tokenStream.get());
+			break; // finish function parse
+		}
+		else {
+			std::cerr << "unexpected token in function call" << std::endl;
+			return;
+		}
 	}
-	*/
 
-	currRoot = funcHead;
+	currRoot = funcHead->getParent();
 }
 
 bool Parser::acceptToken(const Token& token, unsigned type) {

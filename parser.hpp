@@ -24,7 +24,7 @@ class Parser {
 		void consumeFunDeclaration();
 
 		void consumeExpression();
-		void consumeFunctionHead();
+		void consumeFunctionCall();
 
 		bool acceptToken(const Token&, unsigned);
 		bool acceptToken(const Token&, Token::TokenType, const std::string&);

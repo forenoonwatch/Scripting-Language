@@ -20,6 +20,14 @@ Token TokenStream::get() {
 	return tokens[streamI++];
 }
 
+Token TokenStream::peekNext() const {
+	return tokens[streamI + 1];
+}
+
 bool TokenStream::canGet() const {
 	return streamI != tokens.size();
+}
+
+bool TokenStream::canGetNext() const {
+	return streamI + 1 != tokens.size();
 }

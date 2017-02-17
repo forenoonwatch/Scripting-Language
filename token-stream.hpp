@@ -12,9 +12,11 @@ class TokenStream {
 		void addToken(Token token);
 
 		Token peek() const;
+		Token peekNext() const;
 		Token get();
 
 		bool canGet() const;
+		bool canGetNext() const;
 
 		virtual ~TokenStream() = default;
 	private:
