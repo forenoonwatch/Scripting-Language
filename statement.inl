@@ -10,3 +10,7 @@ inline std::vector<Statement*>& Statement::getChildren() {
 inline std::vector<Token>& Statement::getTokens() {
 	return tokens;
 }
+
+inline Statement::StatementType Statement::getType() const {
+	return type;
+}

@@ -22,6 +22,10 @@ void Parser::consumeNextStatement() {
 	}
 }
 
+bool Parser::canConsumeStatement() const {
+	return interpreter.tokenStream.canGet();
+}
+
 void Parser::consumeVarDeclaration() {
 	Statement* varDecl = new Statement(Statement::StatementType::VAR_DECLARATION, currRoot);
 	currRoot = varDecl;
@@ -44,11 +48,10 @@ void Parser::consumeVarDeclaration() {
 	}
 
 	currRoot->addToken(interpreter.tokenStream.get());
-
-	// begin parsing rhs; TODO: move to consumeExpression()
+	
 	consumeExpression();
 
-	currRoot = varDecl; // go back up from going down in the rhs
+	currRoot = currRoot->getParent(); // go back up from going down in the rhs
 }
 
 void Parser::consumeExpression() {
@@ -57,6 +60,10 @@ void Parser::consumeExpression() {
 
 	Statement* baseRoot = currRoot;
 
+	Statement* rhs = new Statement(Statement::StatementType::EXPRESSION, currRoot);
+	currRoot->addToken(Token(rhs));
+	currRoot = rhs;
+
 	while (interpreter.tokenStream.canGet()) {
 		nextToken = interpreter.tokenStream.peek();
 
@@ -64,7 +71,6 @@ void Parser::consumeExpression() {
 				Token::TokenType::IDENTIFIER | Token::TokenType::NUMERIC | Token::TokenType::STRING)) {
 			if (interpreter.tokenStream.canGetNext()
 					&& acceptToken(interpreter.tokenStream.peekNext(), Token::TokenType::OPERATOR, "(")) {
-				currRoot->addToken(nextToken);
 				consumeFunctionCall();
 			}
 			else {
@@ -80,14 +86,17 @@ void Parser::consumeExpression() {
 			}
 		}
 		else if (acceptToken(nextToken, Token::TokenType::OPERATOR, "(")) {
-			currRoot->addToken(interpreter.tokenStream.get());
+			interpreter.tokenStream.get();
 
 			Statement* paren = new Statement(Statement::StatementType::GROUPING, currRoot);
+			currRoot->addToken(Token(paren));
+
 			currRoot = paren;
 		}
 		else if (acceptToken(nextToken, Token::TokenType::OPERATOR, ")")) {
 			if (currRoot != baseRoot) {
-				currRoot->addToken(interpreter.tokenStream.get());
+				interpreter.tokenStream.get();
+				//currRoot->addToken(interpreter.tokenStream.get());
 				currRoot = currRoot->getParent();
 			}
 			else {
@@ -97,7 +106,18 @@ void Parser::consumeExpression() {
 			}
 		}
 		else if (acceptToken(nextToken, Token::TokenType::OPERATOR)) {
-			currRoot->addToken(interpreter.tokenStream.get());
+			if (nextToken.getContent().compare(",") == 0) {
+				if (currRoot->getParent()->getType() == Statement::StatementType::FUNC_CALL) {
+					break; // TODO: see if this doesn't break anything
+				}
+				else {
+					std::cerr << "ERROR: Incorrect usage of comma!" << std::endl;
+					break;
+				}
+			}
+			else {
+				currRoot->addToken(interpreter.tokenStream.get());
+			}
 		}
 		else {
 			// error: invalid token
@@ -113,6 +133,7 @@ void Parser::consumeExpression() {
 
 void Parser::consumeFunctionCall() {
 	Statement* funcHead = new Statement(Statement::StatementType::FUNC_CALL, currRoot);
+	currRoot->addToken(Token(funcHead));
 	currRoot = funcHead;
 
 	Token nextToken = interpreter.tokenStream.peek();

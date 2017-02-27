@@ -4,6 +4,8 @@
 #include <string>
 #include "token.hpp"
 
+class Token;
+
 class Statement {
 	public:
 		enum StatementType {
@@ -24,6 +26,8 @@ class Statement {
 		Statement* getParent();
 		std::vector<Statement*>& getChildren();
 		std::vector<Token>& getTokens();
+
+		StatementType getType() const;
 
 		virtual ~Statement() = default;
 

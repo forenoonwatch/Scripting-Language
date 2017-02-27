@@ -7,7 +7,7 @@ namespace {
 		auto end = std::end(st->getChildren());
 
 		while (it != end) {
-			std::cout << "|";
+			std::cout << "|" << Statement::typeAsString((*it)->getType()) << ": ";
 
 			for (int i = 0; i < depth; ++i) {
 				std::cout << "\t";
@@ -15,7 +15,12 @@ namespace {
 
 
 			for (auto tStart = std::begin((*it)->getTokens()); tStart != std::end((*it)->getTokens()); ++tStart) {
-				std::cout << "[" << tStart->getContent() << "]" << ", ";
+				if (tStart->getTokenType() == Token::TokenType::LINK) {
+					std::cout << "[LINK->" << Statement::typeAsString(tStart->getLink()->getType())  << "], ";
+				}
+				else {
+					std::cout << "[" << tStart->getContent() << "]" << ", ";
+				}
 			}
 
 			std::cout << std::endl;
@@ -36,6 +41,8 @@ void Interpreter::parseText() {
 		lexer->consumeNextToken();
 	}
 
+	parser->consumeNextStatement();
+	parser->consumeNextStatement();
 	parser->consumeNextStatement();
 
 	//while (tokenStream.canGet()) {

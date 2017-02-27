@@ -6,3 +6,7 @@ inline std::string Token::getContent() const {
 inline Token::TokenType Token::getTokenType() const {
 	return tokenType;
 }
+
+inline Statement* Token::getLink() {
+	return link;
+}
