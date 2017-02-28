@@ -4,19 +4,19 @@
 
 class Operator {
 	public:
-		enum ArgumentType {
-			UNARY,
-			BINARY,
-			OTHER
-		};
-
-		enum OperatorType {
+		enum class OperatorType {
 			ARITHMETIC,
 			LOGICAL,
 			COMPARISON,
-			OTHER
+			OP_OTHER
 		};
-
+		
+		enum class ArgumentType {
+			UNARY,
+			BINARY,
+			ARG_OTHER
+		};
+		
 		Operator(const std::string& label, ArgumentType argType, OperatorType opType); // TODO: add action
 
 		std::string getLabel() const;

@@ -2,25 +2,25 @@
 
 OperatorRegistry::OperatorRegistry() {
 	// TODO: replace with correct code for giving operators functionality
-	addOperator(std::make_shared<Operator>("="), Operator::ArgumentType::BINARY, Operator::OperatorType::OTHER);
-	addOperator(std::make_shared<Operator>("~"), Operator::ArgumentType::UNARY, Operator::OperatorType::LOGICAL);
-	addOperator(std::make_shared<Operator>("("), Operator::ArgumentType::BINARY, Operator::OperatorType::OTHER);
-	addOperator(std::make_shared<Operator>(")"), Operator::ArgumentType::BINARY, Operator::OperatorType::OTHER);
-	addOperator(std::make_shared<Operator>(","), Operator::ArgumentType::BINARY, Operator::OperatorType::OTHER);
-	addOperator(std::make_shared<Operator>(";"), Operator::ArgumentType::OTHER, Operator::OperatorType::OTHER);
+	addOperator(std::make_shared<Operator>("=", Operator::ArgumentType::BINARY, Operator::OperatorType::OP_OTHER));
+	addOperator(std::make_shared<Operator>("~", Operator::ArgumentType::UNARY, Operator::OperatorType::LOGICAL));
+	addOperator(std::make_shared<Operator>("(", Operator::ArgumentType::BINARY, Operator::OperatorType::OP_OTHER));
+	addOperator(std::make_shared<Operator>(")", Operator::ArgumentType::BINARY, Operator::OperatorType::OP_OTHER));
+	addOperator(std::make_shared<Operator>(",", Operator::ArgumentType::BINARY, Operator::OperatorType::OP_OTHER));
+	addOperator(std::make_shared<Operator>(";", Operator::ArgumentType::ARG_OTHER, Operator::OperatorType::OP_OTHER));
 
-	addOperator(std::make_shared<Operator>("+"), Operator::ArgumentType::BINARY, Operator::OperatorType::ARITHMETIC);
-	addOperator(std::make_shared<Operator>("-"), Operator::ArgumentType::BINARY, Operator::OperatorType::ARITHMETIC); // TODO: figure out how to do unary -
-	addOperator(std::make_shared<Operator>("*"), Operator::ArgumentType::BINARY, Operator::OperatorType::ARITHMETIC);
-	addOperator(std::make_shared<Operator>("/"), Operator::ArgumentType::BINARY, Operator::OperatorType::ARITHMETIC);
-	addOperator(std::make_shared<Operator>("%"), Operator::ArgumentType::BINARY, Operator::OperatorType::ARITHMETIC);
+	addOperator(std::make_shared<Operator>("+", Operator::ArgumentType::BINARY, Operator::OperatorType::ARITHMETIC));
+	addOperator(std::make_shared<Operator>("-", Operator::ArgumentType::BINARY, Operator::OperatorType::ARITHMETIC)); // TODO: figure out how to do unary -
+	addOperator(std::make_shared<Operator>("*", Operator::ArgumentType::BINARY, Operator::OperatorType::ARITHMETIC));
+	addOperator(std::make_shared<Operator>("/", Operator::ArgumentType::BINARY, Operator::OperatorType::ARITHMETIC));
+	addOperator(std::make_shared<Operator>("%", Operator::ArgumentType::BINARY, Operator::OperatorType::ARITHMETIC));
 
-	addOperator(std::make_shared<Operator>("=="), Operator::ArgumentType::BINARY, Operator::OperatorType::LOGICAL);
-	addOperator(std::make_shared<Operator>(">="), Operator::ArgumentType::BINARY, Operator::OperatorType::LOGICAL);
-	addOperator(std::make_shared<Operator>("<="), Operator::ArgumentType::BINARY, Operator::OperatorType::LOGICAL);
-	addOperator(std::make_shared<Operator>(">"), Operator::ArgumentType::BINARY, Operator::OperatorType::LOGICAL);
-	addOperator(std::make_shared<Operator>("<"), Operator::ArgumentType::BINARY, Operator::OperatorType::LOGICAL);
-	addOperator(std::make_shared<Operator>("~="), Operator::ArgumentType::BINARY, Operator::OperatorType::LOGICAL);
+	addOperator(std::make_shared<Operator>("==", Operator::ArgumentType::BINARY, Operator::OperatorType::LOGICAL));
+	addOperator(std::make_shared<Operator>(">=", Operator::ArgumentType::BINARY, Operator::OperatorType::LOGICAL));
+	addOperator(std::make_shared<Operator>("<=", Operator::ArgumentType::BINARY, Operator::OperatorType::LOGICAL));
+	addOperator(std::make_shared<Operator>(">", Operator::ArgumentType::BINARY, Operator::OperatorType::LOGICAL));
+	addOperator(std::make_shared<Operator>("<", Operator::ArgumentType::BINARY, Operator::OperatorType::LOGICAL));
+	addOperator(std::make_shared<Operator>("~=", Operator::ArgumentType::BINARY, Operator::OperatorType::LOGICAL));
 }
 
 bool OperatorRegistry::isValidOperatorChar(char chr) const {
@@ -32,15 +32,11 @@ bool OperatorRegistry::isValidOperator(const std::string& token) const {
 }
 
 bool OperatorRegistry::isArithmeticOperator(const std::string& token) const {
-	std::shared_ptr<Operator> op = operators.find(token);
-
-	return op != nullptr && op->getOperatorType() == Operator::OperatorType::ARITHMETIC;
+	return operators.find(token)->second->getOperatorType() == Operator::OperatorType::ARITHMETIC;
 }
 
 bool OperatorRegistry::isLogicalOperator(const std::string& token) const {
-	std::shared_ptr<Operator> op = operators.find(token);
-
-	return op != nullptr && op->getOperatorType() == Operator::OperatorType::LOGICAL;
+	return operators.find(token)->second->getOperatorType() == Operator::OperatorType::LOGICAL;
 }
 
 void OperatorRegistry::addOperator(std::shared_ptr<Operator> op) {

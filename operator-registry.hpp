@@ -12,8 +12,8 @@ class OperatorRegistry {
 		bool isValidOperatorChar(char) const;
 		bool isValidOperator(const std::string& token) const;
 		
-		bool isArithmeticOperator(const Token& token) const;
-		bool isLogicalOperator(const Token& token) const;
+		bool isArithmeticOperator(const std::string& token) const;
+		bool isLogicalOperator(const std::string& token) const;
 
 		virtual ~OperatorRegistry() = default;
 	private:
