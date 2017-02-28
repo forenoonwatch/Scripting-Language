@@ -11,7 +11,7 @@ void Parser::consumeNextStatement() {
 			consumeVarDeclaration();
 		}
 		else if (nextToken.getContent().compare("if") == 0) {
-			std::cout << "parse if statement" << std::endl;
+			consumeIfStatement();
 		}
 		else if (nextToken.getContent().compare("fun") == 0) {
 			std::cout << "parse function declaration" << std::endl;
@@ -52,6 +52,32 @@ void Parser::consumeVarDeclaration() {
 	consumeExpression();
 
 	currRoot = currRoot->getParent(); // go back up from going down in the rhs
+}
+
+void Parser::consumeVarAssignment() {
+
+}
+
+void Parser::consumeIfStatement() {
+	Statement* ifHead = new Statement(Statement::StatementType::CONDITIONAL, currRoot);
+	currRoot = ifHead;
+
+	interpreter.tokenStream.get(); // ignore 'if'
+
+	consumeExpression();
+
+	interpreter.tokenStream.get();
+
+	Token nextToken = interpreter.tokenStream.peek();
+
+	while (nextToken.getContent() != "end") {
+		consumeNextStatement();
+		nextToken = interpreter.tokenStream.peek();	
+	}
+
+	interpreter.tokenStream.get();
+
+	currRoot = currRoot->getParent();
 }
 
 void Parser::consumeExpression() {

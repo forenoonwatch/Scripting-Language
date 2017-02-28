@@ -1,7 +1,6 @@
 let y = 5
-let x = a + (3 + (2 / y + prod(communism, jesus + "some other stuff"))) * 3 / x
-let z = 32 - q
 
-if y != z then
-	let y = 5
+if x == 3 then
+	let q = "yes"
+	let a = "no"
 end

@@ -21,6 +21,7 @@ class Parser {
 		Statement* currRoot;
 
 		void consumeVarDeclaration();
+		void consumeVarAssignment();
 		void consumeIfStatement();
 		void consumeFunDeclaration();
 
