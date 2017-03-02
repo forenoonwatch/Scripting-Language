@@ -23,7 +23,7 @@ void Parser::consumeNextStatement() {
 			std::cout << "parse for loop" << std::endl;
 		}
 		else {
-			consumeVarAssignment();
+			consumeOtherIdentifier();
 		}
 	}
 	else {
@@ -33,6 +33,25 @@ void Parser::consumeNextStatement() {
 
 bool Parser::canConsumeStatement() const {
 	return interpreter.tokenStream.canGet();
+}
+
+void Parser::consumeOtherIdentifier() {
+	if (interpreter.tokenStream.canGetNext()) {
+		Token nextToken = interpreter.tokenStream.peekNext();
+
+		if (acceptToken(nextToken, Token::TokenType::OPERATOR, "=")) {
+			consumeVarAssignment();
+		}
+		else if (acceptToken(nextToken, Token::TokenType::OPERATOR, "(")) {
+			consumeFunDeclaration();
+		}
+		else {
+			std::cerr << "Invalid statement" << std::endl;
+		}
+	}
+	else {
+		std::cerr << "Not enough tokens left" << std::endl;
+	}
 }
 
 void Parser::consumeVarDeclaration() {
@@ -134,6 +153,20 @@ void Parser::consumeFunDeclaration() {
 	}
 
 	consumeParamDeclaration();
+
+	Token nextToken = interpreter.tokenStream.peek();
+
+	while (nextToken.getContent() != "end") {
+		consumeNextStatement();
+		nextToken = interpreter.tokenStream.peek();	
+	}
+
+	if (!acceptToken(interpreter.tokenStream.peek(), Token::TokenType::IDENTIFIER, "end")) {
+		std::cerr << "unexpected token" << std::endl;
+		return;
+	}
+
+	interpreter.tokenStream.get(); // ignore 'end'
 
 	currRoot = currRoot->getParent();
 }

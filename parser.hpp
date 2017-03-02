@@ -26,6 +26,8 @@ class Parser {
 		void consumeFunDeclaration();
 		void consumeAnonymousFunDecl();
 
+		void consumeOtherIdentifier();
+
 		void consumeExpression();
 		void consumeFunctionCall();
 		void consumeParamDeclaration();
