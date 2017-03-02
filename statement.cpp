@@ -19,21 +19,27 @@ void Statement::addToken(Token token) {
 std::string Statement::typeAsString(StatementType type) {
 	switch (type) {
 		case VAR_DECLARATION:
-			return "VAR_DECLARATION";
+			return "VARD";
 		case VAR_ASSIGNMENT:
-			return "VAR_ASSIGNMENT";
+			return "VARA";
 		case EXPRESSION:
-			return "EXPRESSION";
+			return "EXPR";
 		case FUNC_CALL:
-			return "FUNC_CALL";
+			return "CALL";
 		case GROUPING:
-			return "GROUPING";
+			return "GRUP";
 		case CONDITIONAL:
-			return "CONDITIONAL";
+			return "COND";
+		case FUNC_DECL:
+			return "FUNC";
+		case WHILE_LOOP:
+			return "WHLE";
+		case FOR_LOOP:
+			return "FORL";
 		case OTHER:
-			return "OTHER";
+			return "OTHR";
 		default:
-			return "UNKNOWN";
+			return "UNKN";
 	}
 
 	return "UNKNOWN";

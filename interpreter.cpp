@@ -7,7 +7,7 @@ namespace {
 		auto end = std::end(st->getChildren());
 
 		while (it != end) {
-			std::cout << "|" << Statement::typeAsString((*it)->getType()) << ": ";
+			std::cout << "|" << Statement::typeAsString((*it)->getType()) << ":\t";
 
 			for (int i = 0; i < depth; ++i) {
 				std::cout << "\t";

@@ -1,6 +1,5 @@
 let y = 5
 
-if x == 3 then
-	let q = "yes"
-	let a = "no"
+fun hello(x, y)
+	print("Hello: " + x + ", " + y)
 end

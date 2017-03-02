@@ -15,6 +15,9 @@ class Statement {
 			FUNC_CALL,
 			GROUPING,
 			CONDITIONAL,
+			FUNC_DECL,
+			WHILE_LOOP,
+			FOR_LOOP,
 			OTHER
 		};
 		
