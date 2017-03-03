@@ -1,6 +1,6 @@
 let y = 5
 
 fun hello(x, y)
-	let z = 3
-	y = 2
+	let z = 3 % fmod(a, b)
+	print(x, y + 5, z + "communism" / (2 * sqrt))
 end

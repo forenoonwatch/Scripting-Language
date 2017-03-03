@@ -46,10 +46,8 @@ void Interpreter::parseText() {
 	}
 
 	//while (tokenStream.canGet()) {
-		//std::cout << "[" << tokenStream.get().getContent() << "]" << std::endl;
+	//	std::cout << "[" << tokenStream.get().getContent() << "]" << std::endl;
 	//}
-
-	std::cout << parser->root->getChildren().size() << std::endl;
 
 	printAllChildren(parser->root);
 }
