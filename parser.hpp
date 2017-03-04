@@ -20,6 +20,8 @@ class Parser {
 		Statement* root;
 		Statement* currRoot;
 
+		bool canParse;
+
 		void consumeVarDeclaration();
 		void consumeVarAssignment();
 		
@@ -38,8 +40,8 @@ class Parser {
 		void consumeParamDeclaration();
 		void consumeScopeBlock();
 
-		bool acceptToken(const Token&, unsigned);
-		bool acceptToken(const Token&, Token::TokenType, const std::string&);
+		bool acceptToken(const Token&, unsigned) const;
+		bool acceptToken(const Token&, const std::string&) const;
 
 		friend class Interpreter;
 };
