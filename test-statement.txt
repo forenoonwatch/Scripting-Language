@@ -1,6 +1,10 @@
-let y = 5
+let x = 0
 
-fun hello(x, y)
-	let z = 3 % fmod(a, b)
-	print(x, y + 5, z + "communism" / (2 * sqrt))
+while x < 3 do
+	print(x)
+	x = x + 1
+end
+
+for let i = 1, 10, -3 do
+	print(i)
 end

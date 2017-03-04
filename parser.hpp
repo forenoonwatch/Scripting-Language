@@ -22,7 +22,12 @@ class Parser {
 
 		void consumeVarDeclaration();
 		void consumeVarAssignment();
+		
 		void consumeIfStatement();
+
+		void consumeWhileLoop();
+		void consumeForLoop();
+
 		void consumeFunDeclaration();
 		void consumeAnonymousFunDecl();
 
@@ -31,6 +36,7 @@ class Parser {
 		void consumeExpression();
 		void consumeFunctionCall();
 		void consumeParamDeclaration();
+		void consumeScopeBlock();
 
 		bool acceptToken(const Token&, unsigned);
 		bool acceptToken(const Token&, Token::TokenType, const std::string&);
