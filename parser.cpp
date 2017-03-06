@@ -8,6 +8,7 @@
  */
 
 #include "parser.hpp"
+#include "script-error.hpp"
 
 Parser::Parser(Interpreter& interpreter)
 : interpreter(interpreter), root(new Statement()), currRoot(root), canParse(true) {}
@@ -36,12 +37,15 @@ void Parser::consumeNextStatement() {
 		}
 	}
 	else {
-		//std::cout << "error: statement start is not an identifier" << std::endl;
+		canParse = false;
+
+		interpreter.errorLog.logError("Syntax error: undefined start to statement:"
+			+ nextToken.getContent());
 	}
 }
 
 bool Parser::canConsumeStatement() const {
-	return interpreter.tokenStream.canGet();
+	return canParse && interpreter.tokenStream.canGet();
 }
 
 void Parser::consumeVarDeclaration() {
@@ -54,7 +58,7 @@ void Parser::consumeVarDeclaration() {
 
 	// check and consume variable name
 	if (!acceptToken(nextToken, Token::TokenType::IDENTIFIER)) {
-		std::cerr << "unexpected token in var decl: " << nextToken.getContent() << std::endl;
+		errorNextToken("identifier");
 		return;
 	}
 
@@ -63,7 +67,7 @@ void Parser::consumeVarDeclaration() {
 
 	// check and consume operator=
 	if (!acceptToken(nextToken, "=")) {
-		std::cerr << "unexpected token in var decl" << nextToken.getContent() << std::endl;
+		errorNextToken("=");
 		return;
 	}
 
@@ -81,8 +85,7 @@ void Parser::consumeVarAssignment() {
 	currRoot->addToken(interpreter.tokenStream.get());
 
 	if (!acceptToken(interpreter.tokenStream.peek(), "=")) {
-		std::cerr << "unexpected token in var assign: "
-			<< interpreter.tokenStream.peek().getContent() << std::endl;
+		errorNextToken("=");
 		return;
 	}
 
@@ -102,8 +105,7 @@ void Parser::consumeIfStatement() {
 	consumeExpression();
 
 	if (!acceptToken(interpreter.tokenStream.peek(), "then")) {
-		std::cerr << "unexpected token: expected 'then' got "
-			<< interpreter.tokenStream.peek().getContent() << std::endl;
+		errorNextToken("then");
 		return;
 	}
 
@@ -120,18 +122,17 @@ void Parser::consumeWhileLoop() {
 
 	interpreter.tokenStream.get(); // ignore 'while'
 
-	if (acceptToken(interpreter.tokenStream.peek(), Token::TokenType::IDENTIFIER)) {
+	if (acceptToken(interpreter.tokenStream.peek(),
+			Token::TokenType::IDENTIFIER | Token::TokenType::NUMERIC | Token::TokenType::STRING)) {
 		consumeExpression();
 	}
 	else {
-		std::cout << "unexpected token: expected identifier got "
-			<< interpreter.tokenStream.peek().getContent() << std::endl;
+		errorNextToken("expression");
 		return;
 	}
 
 	if (!acceptToken(interpreter.tokenStream.peek(), "do")) {
-		std::cout << "unexpected token: expected 'do' got "
-			<< interpreter.tokenStream.peek().getContent() << std::endl;
+		errorNextToken("do");
 		return;
 	}
 
@@ -157,13 +158,12 @@ void Parser::consumeForLoop() {
 		consumeVarAssignment();
 	}
 	else {
-		std::cerr << "Invalid token: Expected var assignment or declaration" << std::endl;
+		errorNextToken("var assignment or declaration");
 		return;
 	}
 
 	if (!acceptToken(interpreter.tokenStream.peek(), ",")) {
-		std::cerr << "Invalid token: expected ',' got "
-			<< interpreter.tokenStream.peek().getContent() << std::endl;
+		errorNextToken(",");
 		return;
 	}
 
@@ -173,7 +173,7 @@ void Parser::consumeForLoop() {
 		consumeExpression();
 	}
 	else {
-		std::cerr << "Reached EOF too early" << std::endl;
+		errorNextToken("expression");
 		return;
 	}
 
@@ -186,7 +186,7 @@ void Parser::consumeForLoop() {
 			consumeExpression();
 		}
 		else {
-			std::cerr << "Reached EOF too early" << std::endl;
+			errorNextToken("expression");
 			return;
 		}
 
@@ -194,16 +194,15 @@ void Parser::consumeForLoop() {
 			interpreter.tokenStream.get(); // ignore 'do'
 		}
 		else {
-			std::cerr << "invalid token: expected 'do' got "
-				<< interpreter.tokenStream.peek().getContent() << std::endl;
+			errorNextToken("do");
+			return;
 		}
 	}
 	else if (acceptToken(nextToken, "do")) {
 		interpreter.tokenStream.get(); // ignore 'do'
 	}
 	else {
-		std::cerr << "Invalid token: expected 'do' or expression, got "
-			<< interpreter.tokenStream.peek().getContent() << std::endl;
+		errorNextToken("do");
 		return;
 	}
 
@@ -219,16 +218,14 @@ void Parser::consumeFunDeclaration() {
 	interpreter.tokenStream.get(); // ignore 'fun'
 
 	if (!acceptToken(interpreter.tokenStream.peek(), Token::TokenType::IDENTIFIER)) {
-		std::cerr << "unexpected token in fun decl: "
-			<< interpreter.tokenStream.peek().getContent() << std::endl;
+		errorNextToken("identifier");
 		return;
 	}
 
 	currRoot->addToken(interpreter.tokenStream.get()); // add function name
 
 	if (!acceptToken(interpreter.tokenStream.peek(), "(")) {
-		std::cerr << "unexpected token in fun decl: expected '(' got "
-			<< interpreter.tokenStream.peek().getContent() << std::endl;
+		errorNextToken("(");
 		return;
 	}
 
@@ -246,8 +243,7 @@ void Parser::consumeAnonymousFunDecl() {
 	interpreter.tokenStream.get(); // ignore 'fun'
 
 	if (!acceptToken(interpreter.tokenStream.peek(), "(")) {
-		std::cerr << "unexpected token in anon fun decl: expected '(' got "
-			<< interpreter.tokenStream.peek().getContent() << std::endl;
+		errorNextToken("(");
 		return;
 	}
 
@@ -267,12 +263,11 @@ void Parser::consumeOtherIdentifier() {
 			consumeFunctionCall();
 		}
 		else {
-			std::cerr << "Invalid statement: got " << 
-			   interpreter.tokenStream.peek().getContent() << std::endl;
+			errorNextToken("function call or var assignment");
 		}
 	}
 	else {
-		std::cerr << "Not enough tokens left" << std::endl;
+		errorNextToken("function call or var assignment");
 	}
 }
 
@@ -372,7 +367,7 @@ void Parser::consumeFunctionCall() {
 	Token nextToken = interpreter.tokenStream.peek();
 
 	if (!acceptToken(nextToken, Token::TokenType::IDENTIFIER)) {
-		std::cerr << "Error: expected identifier for function head" << std::endl;
+		errorNextToken("identifier");
 		return;
 	}
 
@@ -380,20 +375,16 @@ void Parser::consumeFunctionCall() {
 	nextToken = interpreter.tokenStream.peek();
 
 	if (!acceptToken(nextToken, "(")) {
-		std::cerr << "Error: expected ( after identifier" << std::endl;
+		errorNextToken("(");
 		return;
 	}
 
 	interpreter.tokenStream.get(); // ignore '('
 
-	while (interpreter.tokenStream.canGet()) {
-		nextToken = interpreter.tokenStream.peek();
+	nextToken = interpreter.tokenStream.peek();
 
-		if (acceptToken(nextToken, ")")) {
-			interpreter.tokenStream.get(); // end func call parse
-			break;
-		}
-		else if (acceptToken(nextToken, Token::TokenType::IDENTIFIER | Token::TokenType::NUMERIC
+	while (!acceptToken(nextToken, ")")) {
+		if (acceptToken(nextToken, Token::TokenType::IDENTIFIER | Token::TokenType::NUMERIC
 				| Token::TokenType::STRING)) {
 			consumeExpression(); // consume (first) expression
 		}
@@ -404,14 +395,24 @@ void Parser::consumeFunctionCall() {
 				consumeExpression();
 			}
 			else {
-				std::cerr << "met EOF too early in func call" << std::endl;
+				errorNextToken("expression");
+				return;
 			}
 		}
 		else {
-			std::cerr << "unexpected token in function call: " << nextToken.getContent() << std::endl;
+			errorNextToken("function argument");
 			return;
 		}
+
+		nextToken = interpreter.tokenStream.peek();
 	}
+
+	if (!acceptToken(nextToken, ")")) {
+		errorNextToken(")");
+		return;
+	}
+
+	interpreter.tokenStream.get(); // ignore ')'
 
 	currRoot = funcHead->getParent();
 }
@@ -427,7 +428,7 @@ void Parser::consumeParamDeclaration() {
 
 	while (interpreter.tokenStream.canGet() && !acceptToken(nextToken, ")")) {
 		if (!acceptToken(nextToken, Token::TokenType::IDENTIFIER)) {
-			std::cerr << "unexpected token: expected identifier" << std::endl;
+			errorNextToken("identifier");
 			return;
 		}
 
@@ -439,7 +440,7 @@ void Parser::consumeParamDeclaration() {
 			interpreter.tokenStream.get(); // ignore ','
 			
 			if (!acceptToken(interpreter.tokenStream.peek(), Token::TokenType::IDENTIFIER)) {
-				std::cerr << "unexpected token: expected identifier" << std::endl;
+				errorNextToken("identifier");
 				return;
 			}
 
@@ -458,13 +459,19 @@ void Parser::consumeScopeBlock() {
 	Token nextToken = interpreter.tokenStream.peek();
 
 	while (!acceptToken(nextToken, "end")) {
-		consumeNextStatement();
+		if (canConsumeStatement()) {
+			consumeNextStatement();
+		}
+		else {
+			canParse = false;
+			break;
+		}
+
 		nextToken = interpreter.tokenStream.peek();	
 	}
 
 	if (!acceptToken(interpreter.tokenStream.peek(), "end")) {
-		std::cerr << "unexpected token: expected 'end' got "
-			<< interpreter.tokenStream.peek().getContent() << std::endl;
+		errorNextToken("end");
 		return;
 	}
 
@@ -485,4 +492,18 @@ bool Parser::acceptToken(const Token& token, const std::string& content) const {
 	}
 
 	return token.getContent().compare(content) == 0;
+}
+
+void Parser::errorNextToken(const std::string& expected) {
+	canParse = false;
+	std::string got;
+
+	if (interpreter.tokenStream.canGet()) {
+		got = interpreter.tokenStream.peek().getContent();
+	}
+	else {
+		got = "EOF";
+	}
+
+	interpreter.errorLog.logError(SyntaxError(expected, got));
 }

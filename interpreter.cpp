@@ -41,9 +41,13 @@ void Interpreter::parseText() {
 		lexer->consumeNextToken();
 	}
 
+	std::cout << "Finished lexing" << std::endl;
+
 	while (parser->canConsumeStatement()) {
 		parser->consumeNextStatement();
 	}
+
+	std::cout << "Finished parsing" << std::endl;
 
 	//while (tokenStream.canGet()) {
 	//	std::cout << "[" << tokenStream.get().getContent() << "]" << std::endl;

@@ -43,5 +43,7 @@ class Parser {
 		bool acceptToken(const Token&, unsigned) const;
 		bool acceptToken(const Token&, const std::string&) const;
 
+		void errorNextToken(const std::string&);
+
 		friend class Interpreter;
 };

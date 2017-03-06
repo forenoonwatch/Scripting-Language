@@ -6,6 +6,7 @@
 #include "operator-registry.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
+#include "error-log.hpp"
 
 class Lexer;
 class Parser;
@@ -22,6 +23,8 @@ class Interpreter {
 	private:
 		TokenStream tokenStream;
 		OperatorRegistry operatorRegistry;
+		ErrorLog errorLog;
+
 		std::unique_ptr<Lexer> lexer;
 		std::unique_ptr<Parser> parser;
 
