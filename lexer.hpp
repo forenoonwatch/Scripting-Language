@@ -1,9 +1,11 @@
 #pragma once
 
 #include <iostream>
+#include <string>
 #include "token.hpp"
 #include "token-stream.hpp"
 #include "interpreter.hpp"
+#include "error-log.hpp"
 
 class Interpreter;
 
@@ -22,6 +24,7 @@ class Lexer {
 	private:
 		std::istream& textStream;
 		Interpreter& interpreter;
+		bool canContinue;
 
 		void consumeWhitespace();
 		void consumeIdentifier();
@@ -29,9 +32,12 @@ class Lexer {
 		void consumeStringLiteral();
 		void consumeOperator();
 
+		void errorNextChar(const std::string&);
+
 		static bool isWhitespace(char);
 		static bool isIdentifierStart(char);
 		static bool isIdentifier(char);
 		static bool isNumericLiteral(char);
-		static bool isStringLiteral(char); // TODO: add operator check
+		static bool isStringLiteral(char);
+		static bool isPossibleOperator(char); 
 };

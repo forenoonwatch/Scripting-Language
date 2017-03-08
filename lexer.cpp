@@ -1,9 +1,10 @@
 #include "lexer.hpp"
+#include "script-error.hpp"
 #include <sstream>
 #include <cctype>
 
 Lexer::Lexer(std::istream& textStream, Interpreter& interpreter)
-: textStream(textStream), interpreter(interpreter) {}
+: textStream(textStream), interpreter(interpreter), canContinue(true) {}
 
 void Lexer::consumeNextToken() {
 	char nextChar = textStream.peek();
@@ -26,7 +27,7 @@ void Lexer::consumeNextToken() {
 }
 
 bool Lexer::canConsumeToken() const {
-	return !textStream.eof();
+	return canContinue && !textStream.eof();
 }
 
 void Lexer::consumeWhitespace() {
@@ -79,7 +80,15 @@ void Lexer::consumeStringLiteral() {
 		if (nextChar == '\\') { // TODO: possibly auto-resolve escape characters
 			if (canConsumeToken()) {
 				content << static_cast<char>(textStream.get());
-			} // TODO: throw syntax error for unexpected end to character
+			} 
+			else {
+				errorNextChar("symbol");
+				return;
+			}
+		}
+		else if (nextChar == '\n') {
+			errorNextChar("\"");
+			return;
 		}
 		else if (isStringLiteral(nextChar)) {
 			break;
@@ -97,7 +106,8 @@ void Lexer::consumeOperator() {
 		content << nextChar;
 	}
 	else {
-		// TODO: throw error for invalid operator
+		errorNextChar("valid operator");
+		return;
 	}
 
 	do {
@@ -105,6 +115,12 @@ void Lexer::consumeOperator() {
 
 		if (!interpreter.operatorRegistry.isValidOperator(content.str() + nextChar)) {
 			// TODO: check here to make sure current formed token is a valid operator and throw error otherwise
+
+			if (isPossibleOperator(nextChar)) {
+				errorNextChar("valid operator symbol");
+				return;
+			}
+
 			interpreter.tokenStream.addToken(content.str(), Token::TokenType::OPERATOR);
 			break;
 		}
@@ -113,6 +129,20 @@ void Lexer::consumeOperator() {
 		}
 	}
 	while (interpreter.operatorRegistry.isValidOperatorChar(nextChar));
+}
+
+void Lexer::errorNextChar(const std::string& expected) {
+	canContinue = false;
+	std::string got;
+
+	if (!textStream.eof()) {
+		got = std::string(1, static_cast<char>(textStream.peek()));
+	}
+	else {
+		got = "EOF";
+	}
+
+	interpreter.errorLog.logError(SyntaxError(expected, got));
 }
 
 bool Lexer::isWhitespace(char chr) {
@@ -134,4 +164,8 @@ bool Lexer::isNumericLiteral(char chr) {
 
 bool Lexer::isStringLiteral(char chr) {
 	return chr == '"';
+}
+
+bool Lexer::isPossibleOperator(char chr) {
+	return ispunct(chr);
 }
