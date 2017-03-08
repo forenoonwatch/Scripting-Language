@@ -30,28 +30,52 @@ namespace {
 			++it;
 		}
 	}
+
+	void printAllTokens(TokenStream& tokenStream) {
+		while (tokenStream.canGet()) {
+			std::cout << "[" << tokenStream.get().getContent() << "]" << std::endl;
+		}
+	}
 };
 
 Interpreter::Interpreter(std::istream& textStream)
 : lexer(std::make_unique<Lexer>(textStream, *this)),
-parser(std::make_unique<Parser>(*this)) {}
+parser(std::make_unique<Parser>(*this)), canContinue(true) {}
+
+void Interpreter::interpretNextStatement() {
+
+}
+
+bool Interpreter::canInterpretStatement() const {
+	return canContinue;
+}
 
 void Interpreter::parseText() {
+	lexAllTokens();
+
+	if (canContinue) {
+		parseAllStatements();
+	}
+
+	printAllChildren(parser->root);
+}
+
+inline void Interpreter::lexAllTokens() {
 	while (lexer->canConsumeToken()) {
 		lexer->consumeNextToken();
 	}
 
-	std::cout << "Finished lexing" << std::endl;
+	if (lexer->hasErrored()) {
+		canContinue = false;
+	}
+}
 
+inline void Interpreter::parseAllStatements() {
 	while (parser->canConsumeStatement()) {
 		parser->consumeNextStatement();
 	}
 
-	std::cout << "Finished parsing" << std::endl;
-
-	//while (tokenStream.canGet()) {
-	//	std::cout << "[" << tokenStream.get().getContent() << "]" << std::endl;
-	//}
-
-	printAllChildren(parser->root);
+	if (parser->hasErrored()) {
+		canContinue = false;
+	}
 }

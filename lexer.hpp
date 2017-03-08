@@ -19,6 +19,7 @@ class Lexer {
 		void consumeNextToken();
 
 		bool canConsumeToken() const;
+		bool hasErrored() const;
 
 		virtual ~Lexer() = default;
 	private:

@@ -48,6 +48,10 @@ bool Parser::canConsumeStatement() const {
 	return canParse && interpreter.tokenStream.canGet();
 }
 
+bool Parser::hasErrored() const {
+	return !canParse;
+}
+
 void Parser::consumeVarDeclaration() {
 	Statement* varDecl = new Statement(Statement::StatementType::VAR_DECLARATION, currRoot);
 	currRoot = varDecl;

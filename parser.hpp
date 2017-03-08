@@ -12,7 +12,9 @@ class Parser {
 		Parser(Interpreter&);
 
 		void consumeNextStatement();
+
 		bool canConsumeStatement() const;
+		bool hasErrored() const;
 
 		virtual ~Parser() = default;
 	private:

@@ -16,8 +16,9 @@ class Interpreter {
 		Interpreter(std::istream& textStream);
 
 		void parseText();
+		void interpretNextStatement();
 
-		TokenStream& getTokenStream();
+		bool canInterpretStatement() const;
 
 		virtual ~Interpreter() = default;
 	private:
@@ -25,11 +26,14 @@ class Interpreter {
 		OperatorRegistry operatorRegistry;
 		ErrorLog errorLog;
 
+		bool canContinue;
+
 		std::unique_ptr<Lexer> lexer;
 		std::unique_ptr<Parser> parser;
+
+		void lexAllTokens();
+		void parseAllStatements(); // TODO: possibly interpret while parsing
 
 		friend class Lexer;
 		friend class Parser;
 };
-
-#include "interpreter.inl"

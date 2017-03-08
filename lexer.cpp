@@ -30,6 +30,10 @@ bool Lexer::canConsumeToken() const {
 	return canContinue && !textStream.eof();
 }
 
+bool Lexer::hasErrored() const {
+	return !canContinue;
+}
+
 void Lexer::consumeWhitespace() {
 	char nextChar;
 	bool createdEndline = false;
