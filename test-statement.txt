@@ -1,3 +1,2 @@
-fun test()
-	print "test"
-end
+"this is a string
+yes"

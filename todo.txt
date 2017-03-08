@@ -1,0 +1,20 @@
+TODO:
+
+SHORTER TERM:
+- Make errors more logically correct
+- Add line number to Token class
+- Include line number in error
+- Write interpreter
+- Add custom memory allocation in pre-allocated block for variables
+- Add statement evaluator
+- Add ability to keep functions in a [string, function info] map for lookup by the interpreter
+- Add similar recursive descent interpreting to recursive descent parsing
+- Possibly interpret certain things while parsing
+- Possibly store variables in a [string, variable allocated data] map
+- Create variables as a struct of union { different data types}, and enumerated type
+
+LONG TERM:
+- Possibly create a separate namespace for the scripting language classes
+- Name scripting language
+- Write scripting language in such a way that statements can be interpreted while also in a
+  loop of other things going on (possible with the whole if can interpret then interpret one block logic)
