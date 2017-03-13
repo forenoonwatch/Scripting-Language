@@ -1,2 +1,6 @@
-"this is a string
-yes"
+let x = 3
+x = x + 5
+
+fun y(z)
+	print("tesT")
+end

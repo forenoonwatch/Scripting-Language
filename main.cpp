@@ -7,8 +7,11 @@ int main(int argc, char** argv) {
 	Interpreter terp(inFile);
 
 	terp.parseText();
-
 	inFile.close();
+
+	while (terp.canInterpretStatement()) {
+		terp.interpretNextStatement();
+	}
 
 	return 0;
 }

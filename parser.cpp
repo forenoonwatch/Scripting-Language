@@ -75,7 +75,7 @@ void Parser::consumeVarDeclaration() {
 		return;
 	}
 
-	currRoot->addToken(interpreter.tokenStream.get());
+	interpreter.tokenStream.get(); // ignore '='
 	
 	consumeExpression();
 
@@ -93,7 +93,7 @@ void Parser::consumeVarAssignment() {
 		return;
 	}
 
-	currRoot->addToken(interpreter.tokenStream.get());
+	interpreter.tokenStream.get(); // ignore '='
 
 	consumeExpression();
 

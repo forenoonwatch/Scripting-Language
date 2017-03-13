@@ -171,5 +171,5 @@ bool Lexer::isStringLiteral(char chr) {
 }
 
 bool Lexer::isPossibleOperator(char chr) {
-	return ispunct(chr);
+	return ispunct(chr) && !isStringLiteral(chr);
 }
