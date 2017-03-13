@@ -2,22 +2,27 @@
 
 #include <string>
 
+enum class OperatorType {
+	ARITHMETIC,
+	LOGICAL,
+	COMPARISON,
+	OP_OTHER
+};
+		
+enum class ArgumentType {
+	UNARY,
+	BINARY,
+	ARG_OTHER
+};
+
+
+template <typename A, typename B>
 class Operator {
 	public:
-		enum class OperatorType {
-			ARITHMETIC,
-			LOGICAL,
-			COMPARISON,
-			OP_OTHER
-		};
-		
-		enum class ArgumentType {
-			UNARY,
-			BINARY,
-			ARG_OTHER
-		};
-		
-		Operator(const std::string& label, ArgumentType argType, OperatorType opType); // TODO: add action
+		typedef A (*OperatorCallback)(const A&, const B&);
+
+		Operator(const std::string& label,
+			ArgumentType argType, OperatorType opType); 
 
 		std::string getLabel() const;
 		ArgumentType getArgumentType() const;

@@ -84,7 +84,7 @@ void Interpreter::parseText() {
 }
 
 void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable> var) {
-
+	// http://www.geeksforgeeks.org/expression-evaluation/
 }
 
 void Interpreter::interpretVarDecl(Statement* statement) {
