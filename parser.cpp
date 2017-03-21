@@ -275,7 +275,7 @@ void Parser::consumeOtherIdentifier() {
 	}
 }
 
-void Parser::consumeExpression() {
+/*void Parser::consumeExpression() {
 	Token nextToken = interpreter.tokenStream.peek();
 	Token::TokenType lastTokenType = Token::TokenType::OTHER;
 
@@ -357,6 +357,79 @@ void Parser::consumeExpression() {
 	}
 
 	currRoot = baseRoot;
+}*/
+
+void Parser::consumeExpression() {
+	Token nextToken = interpreter.tokenStream.peek();
+	Token::TokenType lastTokenType = Token::TokenType::OTHER;
+
+	Statement* rhs = new Statement(Statement::StatementType::EXPRESSION, currRoot);
+	currRoot = rhs;
+
+	int numParens = 0;
+
+	while (interpreter.tokenStream.canGet()) {
+		nextToken = interpreter.tokenStream.peek();
+
+		if (acceptToken(nextToken, Token::TokenType::IDENTIFIER)) {
+			if ((lastTokenType & (Token::TokenType::STRING | Token::TokenType::IDENTIFIER
+					| Token::TokenType::NUMERIC)) != 0) {
+				// finished parsing
+				break;
+			}
+
+			if (interpreter.tokenStream.canGetNext() && acceptToken(interpreter.tokenStream.peekNext(), "(")) {
+				consumeFunctionCall();
+			}
+			else {
+				currRoot->addToken(interpreter.tokenStream.get());
+			}
+	
+		}
+		else if (acceptToken(nextToken, Token::TokenType::STRING | Token::TokenType::NUMERIC)) {
+			if ((lastTokenType & (Token::TokenType::STRING
+					| Token::TokenType::IDENTIFIER | Token::TokenType::NUMERIC)) != 0) {
+				// finished parsing
+				break;
+			}
+
+			currRoot->addToken(interpreter.tokenStream.get());
+		}
+		else if (acceptToken(nextToken, "(")) {
+			currRoot->addToken(interpreter.tokenStream.get());
+			++numParens;
+		}
+		else if (acceptToken(nextToken, ")")) {
+			currRoot->addToken(interpreter.tokenStream.get());
+			--numParens;
+
+			if (numParens < 0) {
+				interpreter.errorLog.logError("Syntax error: extra )");
+				canParse = false;
+
+				break;
+			}
+		}
+		else if (acceptToken(nextToken, ",")) {
+			if (currRoot->getParent()->getType() != Statement::StatementType::FUNC_CALL) { // TODO: check for for loop
+				errorNextToken("not a comma");
+			}
+
+			break;
+		}
+		else if (acceptToken(nextToken, Token::TokenType::OPERATOR)) {
+			currRoot->addToken(interpreter.tokenStream.get());
+		}
+		else {
+			errorNextToken("valid token");
+			break;
+		}
+
+		lastTokenType = nextToken.getTokenType();
+	
+	}
+
+	currRoot = currRoot->getParent();	
 }
 
 void Parser::consumeFunctionCall() {
