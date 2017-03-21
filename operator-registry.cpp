@@ -6,6 +6,7 @@ void OperatorRegistry::init() {
 	addOperator("=");
 	addOperator("(");
 	addOperator(")");
+	addOperator(",");
 
 	addOperator("+");
 	addOperator("-");
