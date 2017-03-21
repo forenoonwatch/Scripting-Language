@@ -29,7 +29,7 @@ class Lexer {
 
 		void consumeWhitespace();
 		void consumeIdentifier();
-		void consumeNumericLiteral();
+		void consumeNumericLiteral(bool isNegative = false);
 		void consumeStringLiteral();
 		void consumeOperator();
 
@@ -39,6 +39,7 @@ class Lexer {
 		static bool isIdentifierStart(char);
 		static bool isIdentifier(char);
 		static bool isNumericLiteral(char);
+		static bool isNumericLiteralStart(char);
 		static bool isStringLiteral(char);
 		static bool isPossibleOperator(char); 
 };

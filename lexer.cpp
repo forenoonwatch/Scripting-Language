@@ -15,7 +15,7 @@ void Lexer::consumeNextToken() {
 	else if (isIdentifierStart(nextChar)) {
 		consumeIdentifier();
 	}
-	else if (isNumericLiteral(nextChar) && nextChar != 'x') {
+	else if (isNumericLiteralStart(nextChar)) {
 		consumeNumericLiteral();
 	}
 	else if (isStringLiteral(nextChar)) {
@@ -60,8 +60,12 @@ void Lexer::consumeIdentifier() {
 	interpreter.tokenStream.addToken(content.str(), Token::TokenType::IDENTIFIER);
 }
 
-void Lexer::consumeNumericLiteral() {
+void Lexer::consumeNumericLiteral(bool isNegative) {
 	std::stringstream content;
+
+	if (isNegative) {
+		content << '-';
+	}
 
 	do {
 		content << static_cast<char>(textStream.get());
@@ -125,14 +129,20 @@ void Lexer::consumeOperator() {
 				return;
 			}
 
-			interpreter.tokenStream.addToken(content.str(), Token::TokenType::OPERATOR);
+			if (content.str().compare("-") == 0 && isNumericLiteralStart(nextChar)) {
+				consumeNumericLiteral(true);
+			}
+			else {
+				interpreter.tokenStream.addToken(content.str(), Token::TokenType::OPERATOR);
+			}
+
 			break;
 		}
 		else {
 			content << static_cast<char>(textStream.get());
 		}
 	}
-	while (interpreter.operatorRegistry.isValidOperatorChar(nextChar));
+	while (canConsumeToken() && interpreter.operatorRegistry.isValidOperatorChar(nextChar));
 }
 
 void Lexer::errorNextChar(const std::string& expected) {
@@ -166,10 +176,14 @@ bool Lexer::isNumericLiteral(char chr) {
 	return isdigit(chr) || isxdigit(chr) || chr == 'x' || chr == '.';
 }
 
+bool Lexer::isNumericLiteralStart(char chr) {
+	return isdigit(chr) || chr == '.';
+}
+
 bool Lexer::isStringLiteral(char chr) {
 	return chr == '"';
 }
 
 bool Lexer::isPossibleOperator(char chr) {
-	return ispunct(chr) && !isStringLiteral(chr);
+	return ispunct(chr) && !isStringLiteral(chr) && chr != '.';
 }
