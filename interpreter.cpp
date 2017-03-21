@@ -40,7 +40,9 @@ namespace {
 
 Interpreter::Interpreter(std::istream& textStream)
 : lexer(std::make_unique<Lexer>(textStream, *this)),
-parser(std::make_unique<Parser>(*this)), canContinue(true) {}
+parser(std::make_unique<Parser>(*this)), canContinue(true) {
+	operatorRegistry.init();
+}
 
 void Interpreter::interpretNextStatement() {
 	if (currStatement == currEnd) {
