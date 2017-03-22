@@ -30,7 +30,15 @@ bool OperatorRegistry::isValidOperator(const std::string& token) const {
 	return operatorStrings.find(token) != std::end(operatorStrings);
 }
 
-void OperatorRegistry::addOperator(const std::string& token) {
+void OperatorRegistry::applyOperator(const std::string& op, const Variable& lhs
+		const Variable& rhs, Variable& out) const {
+	
+	if (op.compare("+") == 0) {
+		out = lhs + rhs;
+	}
+}
+
+inline void OperatorRegistry::addOperator(const std::string& token) {
 	operatorStrings[token] = true;
 
 	for (std::size_t i = 0, l = token.size(); i < l; ++i) {

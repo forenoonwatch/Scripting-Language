@@ -16,6 +16,16 @@ class Variable {
 
 		virtual ~Variable() = default;
 
+		static void add(const Variable&, const Variable&, Variable&);
+		static void sub(const Variable&, const Variable&, Variable&);
+		static void mul(const Variable&, const Variable&, Variable&);
+		static void div(const Variable&, const Variable&, Variable&);
+		static void mod(const Variable&, const Variable&, Variable&);
+		
+		static void comp(const Variable&, const Variable&, Variable&);
+		static void less(const Variable&, const Variable&, Variable&);
+		static void lessEq(const Variable&, const Variable&, Variable&);
+
 		std::string stringValue;
 		int intValue;
 		double floatValue;
