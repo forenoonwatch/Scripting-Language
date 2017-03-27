@@ -30,12 +30,21 @@ bool OperatorRegistry::isValidOperator(const std::string& token) const {
 	return operatorStrings.find(token) != std::end(operatorStrings);
 }
 
-void OperatorRegistry::applyOperator(const std::string& op, const Variable& lhs
+void OperatorRegistry::applyOperator(const std::string& op, const Variable& lhs,
 		const Variable& rhs, Variable& out) const {
 	
 	if (op.compare("+") == 0) {
-		out = lhs + rhs;
+		Variable::add(lhs, rhs, out);
 	}
+}
+
+bool OperatorRegistry::hasPrecedence(const std::string& op1, const std::string& op2) const {
+	if (op2.compare("(") == 0 || op2.compare(")") == 0) {
+		return false;
+	}
+	
+	return !((op1.compare("*") == 0 || op1.compare("/") == 0 || op1.compare("%") == 0)
+		&& (op2.compare("+") == 0 || op2.compare("-") == 0));
 }
 
 inline void OperatorRegistry::addOperator(const std::string& token) {

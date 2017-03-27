@@ -1,5 +1,6 @@
 #pragma once
 
+#include "token.hpp"
 #include <string>
 
 class Variable {
@@ -11,6 +12,8 @@ class Variable {
 			BOOL,
 			OTHER // TODO: add support for being function references
 		};
+
+		static Variable fromToken(const Token&);
 
 		Variable() = default; // TODO: add constructors for various types possibly
 
