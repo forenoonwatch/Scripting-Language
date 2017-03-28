@@ -13,5 +13,7 @@ int main(int argc, char** argv) {
 		terp.interpretNextStatement();
 	}
 
+	std::cout << terp.getVariable("x")->intValue << std::endl;
+
 	return 0;
 }

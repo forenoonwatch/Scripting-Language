@@ -62,7 +62,7 @@ void Variable::add(const Variable& a, const Variable& b, Variable& out) {
 			out.intValue = a.intValue + b.intValue;
 		}
 		else if (b.type == VariableType::FLOAT) {
-			out.intValue = a.intValue + b.floatValue;
+			out.floatValue = a.intValue + b.floatValue;
 		}
 		else {
 			// TODO: runtime error
@@ -76,6 +76,118 @@ void Variable::add(const Variable& a, const Variable& b, Variable& out) {
 		}
 		else if (out.type == VariableType::FLOAT) {
 			out.floatValue = a.floatValue + b.floatValue;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else {
+		// TODO: runtime error
+	}
+}
+
+void Variable::sub(const Variable& a, const Variable& b, Variable& out) {
+	if (a.type == VariableType::INT) {
+		out.type = VariableType::INT;
+
+		if (b.type == VariableType::INT) {
+			out.intValue = a.intValue - b.intValue;
+		}
+		else if (b.type == VariableType::FLOAT) {
+			out.floatValue = a.intValue - b.floatValue;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else if (a.type == VariableType::FLOAT) {
+		out.type = VariableType::FLOAT;
+
+		if (out.type == VariableType::INT) {
+			out.floatValue = a.floatValue - b.intValue;
+		}
+		else if (out.type == VariableType::FLOAT) {
+			out.floatValue = a.floatValue - b.floatValue;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else {
+		// TODO: runtime error
+	}
+}
+
+void Variable::mul(const Variable& a, const Variable& b, Variable& out) {
+	if (a.type == VariableType::INT) {
+		out.type = VariableType::INT;
+
+		if (b.type == VariableType::INT) {
+			out.intValue = a.intValue * b.intValue;
+		}
+		else if (b.type == VariableType::FLOAT) {
+			out.floatValue = a.intValue * b.floatValue;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else if (a.type == VariableType::FLOAT) {
+		out.type = VariableType::FLOAT;
+
+		if (out.type == VariableType::INT) {
+			out.floatValue = a.floatValue * b.intValue;
+		}
+		else if (out.type == VariableType::FLOAT) {
+			out.floatValue = a.floatValue * b.floatValue;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else {
+		// TODO: runtime error
+	}
+}
+
+void Variable::div(const Variable& a, const Variable& b, Variable& out) {
+	if (a.type == VariableType::INT) {
+		out.type = VariableType::INT;
+
+		if (b.type == VariableType::INT) {
+			out.intValue = a.intValue / b.intValue;
+		}
+		else if (b.type == VariableType::FLOAT) {
+			out.floatValue = a.intValue / b.floatValue;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else if (a.type == VariableType::FLOAT) {
+		out.type = VariableType::FLOAT;
+
+		if (out.type == VariableType::INT) {
+			out.floatValue = a.floatValue / b.intValue;
+		}
+		else if (out.type == VariableType::FLOAT) {
+			out.floatValue = a.floatValue / b.floatValue;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else {
+		// TODO: runtime error
+	}
+}
+
+void Variable::mod(const Variable& a, const Variable& b, Variable& out) {
+	if (a.type == VariableType::INT) {
+		out.type = VariableType::INT;
+
+		if (b.type == VariableType::INT) {
+			out.intValue = a.intValue % b.intValue;
 		}
 		else {
 			// TODO: runtime error

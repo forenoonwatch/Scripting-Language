@@ -36,6 +36,18 @@ void OperatorRegistry::applyOperator(const std::string& op, const Variable& lhs,
 	if (op.compare("+") == 0) {
 		Variable::add(lhs, rhs, out);
 	}
+	else if (op.compare("-") == 0) {
+		Variable::sub(lhs, rhs, out);
+	}
+	else if (op.compare("*") == 0) {
+		Variable::mul(lhs, rhs, out);
+	}
+	else if (op.compare("/") == 0) {
+		Variable::div(lhs, rhs, out);
+	}
+	else if (op.compare("%") == 0) {
+		Variable::mod(lhs, rhs, out);
+	}
 }
 
 bool OperatorRegistry::hasPrecedence(const std::string& op1, const std::string& op2) const {
