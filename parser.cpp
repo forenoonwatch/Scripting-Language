@@ -325,6 +325,11 @@ void Parser::consumeExpression() {
 
 				break;
 			}
+
+			if (interpreter.tokenStream.canGet()
+					&& acceptToken(interpreter.tokenStream.peek(), Token::TokenType::IDENTIFIER)) {
+				break; // finished parsing
+			}
 		}
 		else if (acceptToken(nextToken, ",")) {
 			if (currRoot->getParent()->getType() != Statement::StatementType::FUNC_CALL) { // TODO: check for for loop

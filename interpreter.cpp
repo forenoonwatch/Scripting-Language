@@ -115,7 +115,7 @@ void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable
 				values.pop();
 
 				Variable out;
-				operatorRegistry.applyOperator(operators.top(), v1, v2, out);
+				operatorRegistry.applyOperator(operators.top(), v2, v1, out);
 				values.push(out);
 
 				operators.pop();
@@ -132,7 +132,7 @@ void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable
 				values.pop();
 				
 				Variable out;
-				operatorRegistry.applyOperator(operators.top(), v1, v2, out);
+				operatorRegistry.applyOperator(operators.top(), v2, v1, out);
 				values.push(out);
 
 				operators.pop();
@@ -150,7 +150,7 @@ void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable
 		values.pop();
 		
 		Variable out;
-		operatorRegistry.applyOperator(operators.top(), v1, v2, out);
+		operatorRegistry.applyOperator(operators.top(), v2, v1, out);
 		values.push(out);
 
 		operators.pop();
