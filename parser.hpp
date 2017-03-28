@@ -28,6 +28,10 @@ class Parser {
 		void consumeVarAssignment();
 		
 		void consumeIfStatement();
+		void consumeElifStatement();
+		void consumeElseStatement();
+
+		void consumeIfScope();
 
 		void consumeWhileLoop();
 		void consumeForLoop();

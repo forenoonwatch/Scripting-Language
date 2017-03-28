@@ -104,7 +104,7 @@ void Parser::consumeIfStatement() {
 	Statement* ifHead = new Statement(Statement::StatementType::CONDITIONAL, currRoot);
 	currRoot = ifHead;
 
-	interpreter.tokenStream.get(); // ignore 'if'
+	currRoot->addToken(interpreter.tokenStream.get()); // add 'if' token
 
 	consumeExpression();
 
@@ -115,9 +115,107 @@ void Parser::consumeIfStatement() {
 
 	interpreter.tokenStream.get(); // ignore 'then'
 
-	consumeScopeBlock();
+	consumeIfScope();
 
 	currRoot = currRoot->getParent();
+}
+
+void Parser::consumeIfScope() {
+	Token nextToken = interpreter.tokenStream.peek();
+
+	Statement* ifRoot = currRoot;
+
+	while (!acceptToken(nextToken, "end")) {
+		if (canConsumeStatement()) {
+			if (acceptToken(nextToken, "elif")) {
+				consumeElifStatement();
+				// create link token to elif and elif root
+			}
+			else if (acceptToken(nextToken, "else")) {
+				// create link token to else and else root
+				consumeElseStatement();
+			}
+			else {
+				consumeNextStatement();
+			}
+		}
+		else {
+			errorNextToken("statement");
+			break;
+		}
+
+		nextToken = interpreter.tokenStream.peek();	
+	}
+
+	if (!acceptToken(interpreter.tokenStream.peek(), "end")) {
+		errorNextToken("end");
+		return;
+	}
+
+	interpreter.tokenStream.get(); // ignore 'end'
+}
+
+void Parser::consumeElifStatement() {
+	Statement* ifRoot = currRoot;
+
+	Statement* elifHead = new Statement(Statement::StatementType::CONDITIONAL, currRoot);
+	ifRoot->addToken(Token(elifHead));
+	currRoot = elifHead;
+
+	currRoot->addToken(interpreter.tokenStream.get()); // add 'elif' token
+
+	consumeExpression();
+
+	if (!acceptToken(interpreter.tokenStream.peek(), "then")) {
+		errorNextToken("then");
+		return;
+	}
+
+	interpreter.tokenStream.get(); // ignore 'then'
+
+	Token nextToken = interpreter.tokenStream.peek();
+
+	while (!acceptToken(nextToken, "end")
+			&& !acceptToken(nextToken, "elif") && !acceptToken(nextToken, "else")) {
+		if (canConsumeStatement()) {
+			consumeNextStatement();
+		}
+		else {
+			errorNextToken("statement");
+			break;
+		}
+
+		nextToken = interpreter.tokenStream.peek();
+	}
+
+	currRoot = ifRoot;
+}
+
+void Parser::consumeElseStatement() {
+	Statement* ifRoot = currRoot;
+
+	Statement* elseHead = new Statement(Statement::StatementType::CONDITIONAL, currRoot);
+	ifRoot->addToken(Token(elseHead));
+	currRoot = elseHead;
+
+	currRoot->addToken(interpreter.tokenStream.get()); // add 'else' token
+
+	Token nextToken = interpreter.tokenStream.peek();
+
+	while (!acceptToken(nextToken, "end")
+			&& !acceptToken(nextToken, "elif") && !acceptToken(nextToken, "else")) {
+		if (canConsumeStatement()) {
+			consumeNextStatement();
+		}
+		else {
+			errorNextToken("statement");
+			break;
+		}
+
+		nextToken = interpreter.tokenStream.peek();
+	}
+
+	currRoot = ifRoot;
 }
 
 void Parser::consumeWhileLoop() {

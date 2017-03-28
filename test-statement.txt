@@ -1,5 +1,10 @@
 let x = 5
+let y = 0
 
 if x < 3 then
-	let y = 3
+	y = 3
+elif x > 3 then
+	y = 4
+else
+	y = 7
 end
