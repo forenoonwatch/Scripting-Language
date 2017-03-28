@@ -178,6 +178,24 @@ void Interpreter::interpretVarAssignment(Statement* statement) {
 	evalExpression(expression, var);
 }
 
+void Interpreter::interpretIfStatement(Statement* statement) {
+	auto it = std:begin(statement->getChildren());
+
+	Statement* condition = *(it++);
+	std::shared_ptr<Variable> condVar = std::make_shared<Variable>();
+
+	evalExpression(condition, condVar); // TODO: throw err if not bool type, or default to "is not nil" like lua
+	
+	if (condVar->boolValue) {
+		for (auto end = std::end(statement->getChildren()); it != end; ++it) {
+				
+		}
+	}
+	else {
+		
+	}
+}
+
 std::shared_ptr<Variable> Interpreter::getVariable(const std::string& varName) {
 	return variableMap[varName];
 }

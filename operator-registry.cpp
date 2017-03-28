@@ -48,15 +48,34 @@ void OperatorRegistry::applyOperator(const std::string& op, const Variable& lhs,
 	else if (op.compare("%") == 0) {
 		Variable::mod(lhs, rhs, out);
 	}
+	else if (op.compare("==") == 0) {
+		Variable::comp(lhs, rhs, out);
+	}
+	else if (op.compare("!=") == 0) {
+		Variable::comp(lhs, rhs, out);
+		out.boolValue = !out.boolValue;
+	}
+	else if (op.compare("<") == 0) {
+		Variable::less(lhs, rhs, out);
+	}
+	else if (op.compare(">") == 0) {
+		Variable::less(rhs, lhs, out);
+	}
+	else if (op.compare("<=") == 0) {
+		Variable::lessEq(lhs, rhs, out);
+	}
+	else if (op.compare(">=") == 0) {
+		Variable::lessEq(rhs, lhs, out);
+	}
+
 }
 
 bool OperatorRegistry::hasPrecedence(const std::string& op1, const std::string& op2) const {
 	if (op2.compare("(") == 0 || op2.compare(")") == 0) {
 		return false;
 	}
-	
-	return !((op1.compare("*") == 0 || op1.compare("/") == 0 || op1.compare("%") == 0)
-		&& (op2.compare("+") == 0 || op2.compare("-") == 0));
+
+	return getOperatorLevel(op1) > getOperatorLevel(op2);	
 }
 
 inline void OperatorRegistry::addOperator(const std::string& token) {
@@ -68,3 +87,16 @@ inline void OperatorRegistry::addOperator(const std::string& token) {
 		}
 	}
 }
+
+inline int OperatorRegistry::getOperatorLevel(const std::string& op) const {
+	if (op.compare("==") == 0 || op.compare("!=") == 0 || op.compare("<") == 0
+			|| op.compare(">") == 0 || op.compare(">=") == 0 || op.compare("<=") == 0) {
+		return 2;
+	}
+
+	if (op.compare("*") == 0 || op.compare("/") == 0 || op.compare("%")) {
+		return 1;
+	}
+
+	return 0;
+} 

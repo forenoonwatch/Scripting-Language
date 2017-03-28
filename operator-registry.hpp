@@ -23,4 +23,6 @@ class OperatorRegistry {
 		std::map<std::string, bool> operatorStrings;
 
 		void addOperator(const std::string&);
+
+		int getOperatorLevel(const std::string&) const;
 };

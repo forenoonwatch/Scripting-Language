@@ -197,3 +197,121 @@ void Variable::mod(const Variable& a, const Variable& b, Variable& out) {
 		// TODO: runtime error
 	}
 }
+
+void Variable::comp(const Variable& a, const Variable& b, Variable& out) {
+	out.type = VariableType::BOOL;
+
+	if (a.type == VariableType::STRING) {
+		if (b.type == VariableType::STRING) {
+			out.boolValue = a.stringValue.compare(b.stringValue) == 0;
+		}
+		else if (b.type != VariableType::OTHER) {
+			out.boolValue = false;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else if (a.type == VariableType::INT) {
+		if (b.type == VariableType::INT) {
+			out.boolValue = a.intValue == b.intValue;
+		}
+		else if (b.type == VariableType::FLOAT) {
+			out.boolValue = a.intValue == b.floatValue;
+		}
+		else if (b.type != VariableType::OTHER) {
+			out.boolValue = false;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else if (a.type == VariableType::FLOAT) {
+		if (b.type == VariableType::INT) {
+			out.boolValue = a.floatValue == b.intValue;
+		}
+		else if (b.type == VariableType::FLOAT) {
+			out.boolValue = a.floatValue == b.floatValue;
+		}
+		else if (b.type != VariableType::OTHER) {
+			out.boolValue = false;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else if (a.type == VariableType::BOOL) {
+		if (b.type == VariableType::BOOL) {
+			out.boolValue = a.boolValue == b.boolValue;
+		}
+		else if (a.type != VariableType::OTHER) {
+			out.boolValue = false;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else {
+		// TODO: runtime error
+	}
+}
+
+void Variable::less(const Variable& a, const Variable& b, Variable& out) {
+	out.type = VariableType::BOOL;
+
+	if (a.type == VariableType::INT) {
+		if (b.type == VariableType::INT) {
+			out.boolValue = a.intValue < b.intValue;
+		}
+		else if (b.type == VariableType::FLOAT) {
+			out.boolValue = a.intValue < b.floatValue;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else if (a.type == VariableType::FLOAT) {
+		if (b.type == VariableType::INT) {
+			out.boolValue = a.floatValue < b.intValue;
+		}
+		else if (b.type == VariableType::FLOAT) {
+			out.boolValue = a.floatValue < b.floatValue;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else {
+		// TODO: runtime error
+	}
+}
+
+void Variable::lessEq(const Variable& a, const Variable& b, Variable& out) {
+	out.type = VariableType::BOOL;
+
+	if (a.type == VariableType::INT) {
+		if (b.type == VariableType::INT) {
+			out.boolValue = a.intValue <= b.intValue;
+		}
+		else if (b.type == VariableType::FLOAT) {
+			out.boolValue = a.intValue <= b.floatValue;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else if (a.type == VariableType::FLOAT) {
+		if (b.type == VariableType::INT) {
+			out.boolValue = a.floatValue <= b.intValue;
+		}
+		else if (b.type == VariableType::FLOAT) {
+			out.boolValue = a.floatValue <= b.floatValue;
+		}
+		else {
+			// TODO: runtime error
+		}
+	}
+	else {
+		// TODO: runtime error
+	}
+}

@@ -1,3 +1,5 @@
-let x = 3
-x = (x + 2) / 2
-x = x / 2 
+let x = 5
+
+if x < 3 then
+	let y = 3
+end
