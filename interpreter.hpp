@@ -60,6 +60,8 @@ class Interpreter {
 		void interpretVarAssignment(Statement*);
 		void interpretIfStatement(Statement*);
 
+		void interpretScope();
+
 		void evalExpression(Statement*, std::shared_ptr<Variable>);
 
 		friend class Lexer;

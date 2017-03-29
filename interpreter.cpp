@@ -55,12 +55,15 @@ void Interpreter::interpretNextStatement() {
 	Statement* stmnt = *currStatement;
 
 	if (stmnt->getType() == Statement::StatementType::VAR_DECLARATION) {
+		std::cout << "interpreting var delcaration" << std::endl;
 		interpretVarDecl(stmnt);
 	}
 	else if (stmnt->getType() == Statement::StatementType::VAR_ASSIGNMENT) {
+		std::cout << "interpreting var assignment" << std::endl;
 		interpretVarAssignment(stmnt);
 	}
 	else if (stmnt->getType() == Statement::StatementType::CONDITIONAL) {
+		std::cout << "interpreting conditional" << std::endl;
 		interpretIfStatement(stmnt);
 	}
 	else {
@@ -194,7 +197,37 @@ void Interpreter::interpretIfStatement(Statement* statement) {
 	}
 	else {
 		std::cout << "coniditon failed; trying other conditions or moving on" << std::endl;
+
+		interpretScope();
 	}
+}
+
+void Interpreter::interpretScope() {
+	std::vector<Statement*>::iterator lastStatement = currStatement;
+	Statement* startStatement = *currStatement;
+
+	currStatement = std::begin(startStatement->getChildren());
+	currEnd = std::end(startStatement->getChildren());
+
+	while (currStatement != currEnd) {
+		if ((*currStatement)->getType() == Statement::StatementType::EXPRESSION) {
+			++currStatement;
+			continue;
+		}
+
+		if ((*currStatement)->getType() == Statement::StatementType::CONDITIONAL) {
+			std::cout << "finished parsing if block" << std::endl;
+			break;
+		}
+		
+		interpretNextStatement();
+	}
+
+	std::cout << "got here" << std::endl;
+	
+	currStatement = lastStatement;
+
+	std::cout << "problemo" << std::endl;
 }
 
 std::shared_ptr<Variable> Interpreter::getVariable(const std::string& varName) {
