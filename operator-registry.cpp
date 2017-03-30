@@ -3,6 +3,8 @@
 OperatorRegistry::OperatorRegistry() {}
 
 void OperatorRegistry::init() {
+	addOperator("--");
+
 	addOperator("=");
 	addOperator("(");
 	addOperator(")");

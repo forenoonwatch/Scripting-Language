@@ -46,6 +46,21 @@ parser(std::make_unique<Parser>(*this)), canContinue(true) {
 }
 
 void Interpreter::interpretNextStatement() {
+	/*
+		Interpreting strategy:
+
+		- interpretNext() is called by user which interprets all statements until program is paused or yielded
+		- each scope requires its own iterator, since program can pause or be yielded at any moment
+		- therefore, a stack<iterator> is required, with root-iterator at the bottom, and each scope pushing and popping
+		- their iterator
+		- BETTER LONG TERM IDEA: have a ScopeInfo class with statement iterator data, memory allocation data,
+		  scope only function data, etc
+		- variable resolution can be done working through the stack
+		- stack must be a std::vector<std::shared_ptr<ScopeInfo>>
+
+		- 
+	*/
+
 	if (currStatement == currEnd) {
 		canContinue = false;
 		std::cout << "Finished interpreting" << std::endl;
@@ -84,12 +99,9 @@ void Interpreter::parseText() {
 		parseAllStatements();
 	}
 
-	printAllChildren(parser->root);
+	//printAllChildren(parser->root);
 
 	parser->currRoot = parser->root;
-	
-	currStatement = std::begin(parser->currRoot->getChildren());
-	currEnd = std::end(parser->currRoot->getChildren());
 }
 
 void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable> var) {
@@ -198,7 +210,7 @@ void Interpreter::interpretIfStatement(Statement* statement) {
 	else {
 		std::cout << "coniditon failed; trying other conditions or moving on" << std::endl;
 
-		interpretScope();
+		//interpretScope();
 	}
 }
 

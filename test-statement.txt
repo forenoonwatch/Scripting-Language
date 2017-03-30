@@ -1,5 +1,8 @@
-let x = 5
+-- test statement script
+
+let x = 5 -- this is a variable declaration
 let y = 0
+-- let q = "yes"
 
 if x < 3 then
 	y = 3
@@ -7,4 +10,8 @@ elif x > 3 then
 	y = 4
 else
 	y = 7
+end
+
+fun testFunc(a, b)
+	let z = atan2(b, a)
 end

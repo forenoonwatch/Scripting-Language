@@ -6,13 +6,13 @@ SHORTER TERM:
 - Include line number in error
 - Write interpreter
 - Add custom memory allocation in pre-allocated block for variables
-- Add statement evaluator
++ Add statement evaluator
 - Add ability to keep functions in a [string, function info] map for lookup by the interpreter
 - Add similar recursive descent interpreting to recursive descent parsing
 - Possibly interpret certain things while parsing
 + Possibly store variables in a [string, variable allocated data] map
 + Create variable class
-- Redo expression parsing to not be multi-level, to suit expression evaluator
++ Redo expression parsing to not be multi-level, to suit expression evaluator
 
 LONG TERM:
 - Possibly create a separate namespace for the scripting language classes

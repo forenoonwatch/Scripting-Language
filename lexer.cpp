@@ -133,7 +133,12 @@ void Lexer::consumeOperator() {
 				consumeNumericLiteral(true);
 			}
 			else {
-				interpreter.tokenStream.addToken(content.str(), Token::TokenType::OPERATOR);
+				if (content.str().compare("--") == 0) {
+					ignoreLineComment();
+				}
+				else {
+					interpreter.tokenStream.addToken(content.str(), Token::TokenType::OPERATOR);
+				}
 			}
 
 			break;
@@ -143,6 +148,12 @@ void Lexer::consumeOperator() {
 		}
 	}
 	while (canConsumeToken() && interpreter.operatorRegistry.isValidOperatorChar(nextChar));
+}
+
+void Lexer::ignoreLineComment() {
+	while (textStream.peek() != '\n') {
+		textStream.get();
+	}
 }
 
 void Lexer::errorNextChar(const std::string& expected) {

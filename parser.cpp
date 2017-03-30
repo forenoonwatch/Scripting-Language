@@ -414,6 +414,10 @@ void Parser::consumeExpression() {
 			++numParens;
 		}
 		else if (acceptToken(nextToken, ")")) {
+			if (currRoot->getParent()->getType() == Statement::StatementType::FUNC_CALL) {
+				break; // finished parsing
+			}
+
 			currRoot->addToken(interpreter.tokenStream.get());
 			--numParens;
 

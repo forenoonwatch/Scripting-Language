@@ -50,9 +50,6 @@ class Interpreter {
 
 		std::map<std::string, std::shared_ptr<Variable>> variableMap;
 
-		std::vector<Statement*>::iterator currStatement;
-		std::vector<Statement*>::iterator currEnd;
-
 		void lexAllTokens();
 		void parseAllStatements(); // TODO: possibly interpret while parsing
 

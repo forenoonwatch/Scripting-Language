@@ -33,6 +33,8 @@ class Lexer {
 		void consumeStringLiteral();
 		void consumeOperator();
 
+		void ignoreLineComment();
+
 		void errorNextChar(const std::string&);
 
 		static bool isWhitespace(char);
