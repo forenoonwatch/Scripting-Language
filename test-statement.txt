@@ -1,17 +1,15 @@
 -- test statement script
 
-let x = 5 -- this is a variable declaration
+let x = 21
 let y = 0
--- let q = "yes"
 
 if x < 3 then
 	y = 3
-elif x > 3 then
-	y = 4
+elif x > 20 then
+	y = 18
 else
-	y = 7
+	y = 19
+	y = y + 1
 end
 
-fun testFunc(a, b)
-	let z = atan2(b, a)
-end
+x = 3

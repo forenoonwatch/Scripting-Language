@@ -13,8 +13,8 @@ int main(int argc, char** argv) {
 		terp.interpretNextStatement();
 	}
 
-	std::cout << "x = " << (terp.getVariable("x")->boolValue ? "true" : "false") << std::endl;
-	std::cout << "y = " << terp.getVariable("y")->intValue << std::endl;
+	//std::cout << "x = " << (terp.getVariable("x")->boolValue ? "true" : "false") << std::endl;
+	//std::cout << "y = " << terp.getVariable("y")->intValue << std::endl;
 
 	return 0;
 }

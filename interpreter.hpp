@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <memory>
-#include <map>
 #include <vector>
 #include <string>
 
@@ -12,6 +11,7 @@
 #include "parser.hpp"
 #include "error-log.hpp"
 #include "variable.hpp"
+#include "scope-frame.hpp"
 
 class Lexer;
 class Parser;
@@ -48,7 +48,9 @@ class Interpreter {
 		std::unique_ptr<Lexer> lexer;
 		std::unique_ptr<Parser> parser;
 
-		std::map<std::string, std::shared_ptr<Variable>> variableMap;
+		std::vector<std::shared_ptr<ScopeFrame>> scopeStack;
+
+		std::shared_ptr<Variable> resolveVariable(const std::string& name);
 
 		void lexAllTokens();
 		void parseAllStatements(); // TODO: possibly interpret while parsing

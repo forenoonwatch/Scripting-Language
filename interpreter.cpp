@@ -61,13 +61,24 @@ void Interpreter::interpretNextStatement() {
 		- 
 	*/
 
-	if (currStatement == currEnd) {
-		canContinue = false;
-		std::cout << "Finished interpreting" << std::endl;
-		return; // TODO: check parent or check current scope to see if actually finished parsing
+	std::shared_ptr<ScopeFrame> currScope = scopeStack.back();
+
+	while (canContinue && !currScope->canGetStatement()) {
+		scopeStack.pop_back();
+
+		std::cout << "popping scope" << std::endl;
+		
+		if (!scopeStack.empty()) {
+			currScope = scopeStack.back();
+		}
+		else {
+			std::cout << "END OF SCRIPT" << std::endl;
+			canContinue = false; // TODO: mark that script has finished correctly
+			return;
+		}
 	}
 
-	Statement* stmnt = *currStatement;
+	Statement* stmnt = currScope->getStatement();
 
 	if (stmnt->getType() == Statement::StatementType::VAR_DECLARATION) {
 		std::cout << "interpreting var delcaration" << std::endl;
@@ -84,8 +95,6 @@ void Interpreter::interpretNextStatement() {
 	else {
 		std::cout << "skipping " << Statement::typeAsString(stmnt->getType()) << std::endl;
 	}
-
-	++currStatement;
 }
 
 bool Interpreter::canInterpretStatement() const {
@@ -99,9 +108,10 @@ void Interpreter::parseText() {
 		parseAllStatements();
 	}
 
-	//printAllChildren(parser->root);
+	scopeStack.push_back(std::make_shared<ScopeFrame>(parser->root));
 
-	parser->currRoot = parser->root;
+	printAllChildren(parser->root);
+	std::cout << "\nSTART OF SCRIPT" << std::endl;
 }
 
 void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable> var) {
@@ -118,7 +128,7 @@ void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable
 				values.push(Variable::fromToken(*it));
 			}
 			else {
-				values.push(*variableMap[it->getContent()]);
+				values.push(*resolveVariable(it->getContent()));
 			}
 		}
 		else if (it->getContent().compare("(") == 0) {
@@ -177,6 +187,16 @@ void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable
 	*var = std::move(values.top());
 }
 
+std::shared_ptr<Variable> Interpreter::resolveVariable(const std::string& name) {	
+	for (int i = scopeStack.size() - 1; i >= 0; --i) {
+		if (scopeStack[i]->getVariable(name) != nullptr) {
+			return scopeStack[i]->getVariable(name);
+		}
+	}
+
+	return nullptr;
+}
+
 void Interpreter::interpretVarDecl(Statement* statement) {
 	std::string varName = statement->getTokens()[0].getContent();
 	Statement* expression = statement->getChildren()[0];
@@ -184,66 +204,74 @@ void Interpreter::interpretVarDecl(Statement* statement) {
 	std::shared_ptr<Variable> var = std::make_shared<Variable>();
 	evalExpression(expression, var);
 	
-	variableMap.emplace(varName, var);
+	scopeStack.back()->addVariable(varName, var);
 }
 
 void Interpreter::interpretVarAssignment(Statement* statement) {
 	std::string varName = statement->getTokens()[0].getContent();
 	Statement* expression = statement->getChildren()[0];
 
-	std::shared_ptr<Variable> var = variableMap[varName]; // TODO: throw err if nullptr
+	std::shared_ptr<Variable> var = resolveVariable(varName); // TODO: throw err if nullptr
 
 	evalExpression(expression, var);
 }
 
 void Interpreter::interpretIfStatement(Statement* statement) {
-	auto it = std::begin(statement->getChildren());
+	auto it = std::begin(statement->getTokens());
 
-	Statement* condition = *(it++);
+	if (it->getContent().compare("if") != 0) {
+		std::cout << "skipping elif or else" << std::endl;
+		return; // skip elif and else statements ; TODO: pop scope
+	}
+	
+	++it;
+
 	std::shared_ptr<Variable> condVar = std::make_shared<Variable>();
 
-	evalExpression(condition, condVar); // TODO: throw err if not bool type, or default to "is not nil" like lua
-	
-	if (condVar->boolValue) {
-		std::cout << "condition passed!" << std::endl;
-	}
-	else {
-		std::cout << "coniditon failed; trying other conditions or moving on" << std::endl;
+	evalExpression(statement->getChildren()[0], condVar);
 
-		//interpretScope();
+	if (condVar->boolValue) {
+		std::cout << "found sucessful first if" << std::endl;
+		scopeStack.push_back(std::make_shared<ScopeFrame>(statement));
+
+		return;
+	}
+
+	Statement* elseStatement = nullptr;
+
+	for (auto end = std::end(statement->getTokens()); it != end; ++it) {
+		Statement* condition = it->getLink();
+
+		if (condition->getTokens()[0].getContent().compare("else") == 0) {
+			elseStatement = condition;
+			continue;
+		}
+
+		// TODO: throw err if not bool type, or default to "is not nil" like lua
+		evalExpression(condition->getChildren()[0], condVar);
+
+		if (condVar->boolValue) {
+			std::cout << "found successful statement" << std::endl;
+			scopeStack.push_back(std::make_shared<ScopeFrame>(condition));
+
+			return;
+		}
+		else {
+			std::cout << "attempting another statement" << std::endl;
+		}
+	}
+
+	if (elseStatement != nullptr) {
+		std::cout << "defaulting to else statement" << std::endl;
+		scopeStack.push_back(std::make_shared<ScopeFrame>(elseStatement));
 	}
 }
 
 void Interpreter::interpretScope() {
-	std::vector<Statement*>::iterator lastStatement = currStatement;
-	Statement* startStatement = *currStatement;
-
-	currStatement = std::begin(startStatement->getChildren());
-	currEnd = std::end(startStatement->getChildren());
-
-	while (currStatement != currEnd) {
-		if ((*currStatement)->getType() == Statement::StatementType::EXPRESSION) {
-			++currStatement;
-			continue;
-		}
-
-		if ((*currStatement)->getType() == Statement::StatementType::CONDITIONAL) {
-			std::cout << "finished parsing if block" << std::endl;
-			break;
-		}
-		
-		interpretNextStatement();
-	}
-
-	std::cout << "got here" << std::endl;
-	
-	currStatement = lastStatement;
-
-	std::cout << "problemo" << std::endl;
 }
 
 std::shared_ptr<Variable> Interpreter::getVariable(const std::string& varName) {
-	return variableMap[varName];
+	return nullptr; // TODO: resolve variables
 }
 
 inline void Interpreter::lexAllTokens() {
