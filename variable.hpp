@@ -1,6 +1,7 @@
 #pragma once
 
 #include "token.hpp"
+#include "statement.hpp"
 #include <string>
 
 class Variable {
@@ -10,12 +11,15 @@ class Variable {
 			INT,
 			FLOAT,
 			BOOL,
-			OTHER // TODO: add support for being function references
+			FUNCTION,
+			NIL,
+			OTHER
 		};
 
 		static Variable fromToken(const Token&);
 
 		Variable() = default; // TODO: add constructors for various types possibly
+		Variable(Statement* func);
 
 		virtual ~Variable() = default;
 
@@ -33,6 +37,7 @@ class Variable {
 		int intValue;
 		double floatValue;
 		bool boolValue;
+		Statement* funcValue;
 
 		VariableType type = VariableType::OTHER;
 };

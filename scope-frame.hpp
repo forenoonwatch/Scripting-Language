@@ -31,9 +31,10 @@ class ScopeFrame {
 class FunctionFrame: public ScopeFrame {
 	public:
 		FunctionFrame(Statement*);
+		FunctionFrame(Statement*, std::shared_ptr<Variable>);
 		
-		Variable& getReturnValue();
+		std::shared_ptr<Variable> getReturnValue();
 
 	private:
-		Variable returnValue;
+		std::shared_ptr<Variable> returnValue;
 };

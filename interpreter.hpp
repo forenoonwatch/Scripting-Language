@@ -12,9 +12,11 @@
 #include "error-log.hpp"
 #include "variable.hpp"
 #include "scope-frame.hpp"
+#include "expression.hpp"
 
 class Lexer;
 class Parser;
+class Expression;
 
 class Interpreter {
 	public:
@@ -45,10 +47,13 @@ class Interpreter {
 
 		bool canContinue;
 
+		bool evaluateExpression;
+
 		std::unique_ptr<Lexer> lexer;
 		std::unique_ptr<Parser> parser;
 
 		std::vector<std::shared_ptr<ScopeFrame>> scopeStack;
+		std::vector<std::shared_ptr<Expression>> expressionStack;
 
 		std::shared_ptr<Variable> resolveVariable(const std::string& name);
 
@@ -58,11 +63,11 @@ class Interpreter {
 		void interpretVarDecl(Statement*);
 		void interpretVarAssignment(Statement*);
 		void interpretIfStatement(Statement*);
-
-		void interpretScope();
+		void interpretFuncDecl(Statement*);
 
 		void evalExpression(Statement*, std::shared_ptr<Variable>);
 
 		friend class Lexer;
 		friend class Parser;
+		friend class Expression;
 };

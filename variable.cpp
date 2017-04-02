@@ -1,6 +1,8 @@
 #include "variable.hpp"
 #include <cstdlib>
 
+Variable::Variable(Statement* func): funcValue(func), type(VariableType::FUNCTION) {}
+
 Variable Variable::fromToken(const Token& token) {
 	Variable out;
 

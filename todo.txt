@@ -1,5 +1,34 @@
 TODO:
 
+QUICK DESIGN:
+	LEXER:
+		- Lex not/and/or as operators
+	PARSER:
+		- Create return statement parsing
+		- Assert inside if statement parsing that if statements are always
+		  structured if[, elif ... elif[, else]]
+		- Finalize parsing for loops
+		- Possibly parse do/while or repeat/until loops
+	INTERPRETER:
+		- Interpret function declarations
+		- Interpret function calls in expression evaluation
+		- Interpret unary operators before binary operators in expression
+		  evaluation
+		- Design and implement functionality for repeatedly called sections of
+		  code (i.e. functions and loops)
+		- Design and implement functionality for allowing expressions to be
+		  evaluated with function calls that can yield/pause at any point
+		- Implement and emplace all runtime errors where required (!!!)
+	OTHER:
+		- Refactor OperatorRegistry to centralize functions that currently
+		  exist in the Variable class, possibly including the re-creation of
+		  the Operator class
+		- Use Operator class to store functions for operating on variables, as
+		  well as data about whether or not the op is unary or binary, or both
+		- Create a KeywordRegistry to centralize what is and is not a reserved
+		  keyword, to test variable naming, and possibly allow centralization
+		  of keywords for certain tasks
+
 SHORTER TERM:
 - Make errors more logically correct
 - Add line number to Token class

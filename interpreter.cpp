@@ -41,7 +41,7 @@ namespace {
 
 Interpreter::Interpreter(std::istream& textStream)
 : lexer(std::make_unique<Lexer>(textStream, *this)),
-parser(std::make_unique<Parser>(*this)), canContinue(true) {
+parser(std::make_unique<Parser>(*this)), canContinue(true), evaluateExpression(false) {
 	operatorRegistry.init();
 }
 
@@ -60,6 +60,24 @@ void Interpreter::interpretNextStatement() {
 
 		- 
 	*/
+
+	if (evaluateExpression) {
+		if (expressionStack.empty()) {
+			evaluateExpression = false;
+		}
+		else {
+			std::shared_ptr<Expression> exp = expressionStack.back();
+
+			while (evaluateExpression && exp->canEval()) {
+				exp->evalNext();
+			}
+
+			if (!exp->canEval()) {
+				evaluateExpression = false;
+				expressionStack.pop_back();
+			}
+		}
+	}
 
 	std::shared_ptr<ScopeFrame> currScope = scopeStack.back();
 
@@ -92,6 +110,10 @@ void Interpreter::interpretNextStatement() {
 		std::cout << "interpreting conditional" << std::endl;
 		interpretIfStatement(stmnt);
 	}
+	else if (stmnt->getType() == Statement::StatementType::FUNC_DECL) {
+		std::cout << "interpreting function declaration" << std::endl;
+		interpretFuncDecl(stmnt);
+	}
 	else {
 		std::cout << "skipping " << Statement::typeAsString(stmnt->getType()) << std::endl;
 	}
@@ -115,8 +137,21 @@ void Interpreter::parseText() {
 }
 
 void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable> var) {
+	std::shared_ptr<Expression> expr = std::make_shared<Expression>(*this, expression, var);
+	expressionStack.push_back(expr);
+	evaluateExpression = true;
+
+	while (evaluateExpression && expr->canEval()) {
+		expr->evalNext();
+	}
+
+	if (!expr->canEval()) {
+		evaluateExpression = false;
+		expressionStack.pop_back();
+	}
+
 	// http://www.geeksforgeeks.org/expression-evaluation/
-	std::stack<Variable> values;
+	/*std::stack<Variable> values;
 	std::stack<std::string> operators;
 
 	for (auto it = std::begin(expression->getTokens()), end = std::end(expression->getTokens()); it != end; ++it) {
@@ -184,7 +219,7 @@ void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable
 		operators.pop();
 	}
 
-	*var = std::move(values.top());
+	*var = std::move(values.top());*/
 }
 
 std::shared_ptr<Variable> Interpreter::resolveVariable(const std::string& name) {	
@@ -203,7 +238,7 @@ void Interpreter::interpretVarDecl(Statement* statement) {
 
 	std::shared_ptr<Variable> var = std::make_shared<Variable>();
 	evalExpression(expression, var);
-	
+
 	scopeStack.back()->addVariable(varName, var);
 }
 
@@ -267,11 +302,13 @@ void Interpreter::interpretIfStatement(Statement* statement) {
 	}
 }
 
-void Interpreter::interpretScope() {
+void Interpreter::interpretFuncDecl(Statement* statement) {
+	scopeStack.back()->addVariable(statement->getTokens()[0].getContent(),
+		std::make_shared<Variable>(statement));
 }
 
 std::shared_ptr<Variable> Interpreter::getVariable(const std::string& varName) {
-	return nullptr; // TODO: resolve variables
+	return resolveVariable(varName);
 }
 
 inline void Interpreter::lexAllTokens() {

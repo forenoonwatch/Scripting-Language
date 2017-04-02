@@ -3,13 +3,8 @@
 let x = 21
 let y = 0
 
-if x < 3 then
-	y = 3
-elif x > 20 then
-	y = 18
-else
-	y = 19
-	y = y + 1
+fun f(a, b)
+	
 end
 
-x = 3
+let z = f(x, y)
