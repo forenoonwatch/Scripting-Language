@@ -30,6 +30,8 @@ void Expression::evalNext() {
 
 			if (funcVar != nullptr && funcVar->type == Variable::VariableType::FUNCTION
 					&& funcVar->funcValue != nullptr) {
+				std::cout << "interpreting in-expr func call" << std::endl;				
+
 				std::shared_ptr<Variable> returnVar = std::make_shared<Variable>();
 				interpreter.scopeStack.push_back(std::make_shared<FunctionFrame>(funcVar->funcValue,
 					returnVar));

@@ -26,6 +26,9 @@ void Parser::consumeNextStatement() {
 		else if (nextToken.getContent().compare("fun") == 0) {
 			consumeFunDeclaration();
 		}
+		else if (nextToken.getContent().compare("return") == 0) {
+			consumeReturn();
+		}
 		else if (nextToken.getContent().compare("while") == 0) {
 			consumeWhileLoop();
 		}
@@ -334,6 +337,17 @@ void Parser::consumeFunDeclaration() {
 	consumeParamDeclaration();
 
 	consumeScopeBlock();
+
+	currRoot = currRoot->getParent();
+}
+
+void Parser::consumeReturn() {
+	Statement* ret = new Statement(Statement::StatementType::RETURN, currRoot);
+	currRoot = ret;
+
+	interpreter.tokenStream.get(); // ignore 'return'
+
+	consumeExpression();
 
 	currRoot = currRoot->getParent();
 }

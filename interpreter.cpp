@@ -74,6 +74,11 @@ void Interpreter::interpretNextStatement() {
 
 			if (!exp->canEval()) {
 				evaluateExpression = false;
+
+				if (reinterpret_cast<>) {
+					
+				}
+
 				expressionStack.pop_back();
 			}
 		}

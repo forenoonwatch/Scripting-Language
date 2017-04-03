@@ -32,6 +32,8 @@ std::string Statement::typeAsString(StatementType type) {
 			return "COND";
 		case FUNC_DECL:
 			return "FUNC";
+		case RETURN:
+			return "RTRN";
 		case WHILE_LOOP:
 			return "WHLE";
 		case FOR_LOOP:

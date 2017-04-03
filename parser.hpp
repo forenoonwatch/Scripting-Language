@@ -38,6 +38,7 @@ class Parser {
 
 		void consumeFunDeclaration();
 		void consumeAnonymousFunDecl();
+		void consumeReturn();
 
 		void consumeOtherIdentifier();
 

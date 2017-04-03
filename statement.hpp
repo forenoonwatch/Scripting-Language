@@ -16,6 +16,7 @@ class Statement {
 			GROUPING,
 			CONDITIONAL,
 			FUNC_DECL,
+			RETURN,
 			WHILE_LOOP,
 			FOR_LOOP,
 			OTHER
