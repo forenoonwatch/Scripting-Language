@@ -68,6 +68,7 @@ class Interpreter {
 		void interpretReturn(Statement*);
 
 		void evalExpression(Statement*, std::shared_ptr<Variable>);
+		void evalCallArgs(std::shared_ptr<FunctionFrame> func, Statement* body, Statement* call);
 
 		friend class Lexer;
 		friend class Parser;

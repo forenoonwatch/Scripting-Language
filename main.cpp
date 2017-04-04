@@ -11,16 +11,13 @@ int main(int argc, char** argv) {
 
 	while (terp.canInterpretStatement()) {
 		terp.interpretNextStatement();
-
-		/*std::shared_ptr<Variable> var = terp.getVariable("x");
-
-		if (var != nullptr) {
-			std::cout << var->intValue << std::endl;
-		}*/
 	}
 
 	//std::cout << "x = " << (terp.getVariable("x")->boolValue ? "true" : "false") << std::endl;
-	//std::cout << "y = " << terp.getVariable("y")->intValue << std::endl;
+
+	if (terp.getVariable("z") != nullptr) {
+		std::cout << "z = " << terp.getVariable("z")->intValue << std::endl;
+	}
 
 	return 0;
 }

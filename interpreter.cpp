@@ -73,6 +73,7 @@ void Interpreter::interpretNextStatement() {
 			}
 
 			if (!exp->canEval()) {
+				std::cout << "popping expression" << std::endl;
 				evaluateExpression = false;
 				expressionStack.pop_back();
 			}
@@ -88,12 +89,22 @@ void Interpreter::interpretNextStatement() {
 			if (exp->isExpectingValue()) {
 				exp->addValue(std::static_pointer_cast<FunctionFrame>(currScope)->getReturnValue());
 				evaluateExpression = true;
+				scopeStack.pop_back();
+				std::cout << "back on evaluating expressions; popped scope" << std::endl;
+				break;
 			}
 		}
 
-		scopeStack.pop_back();
-
-		std::cout << "popping scope" << std::endl;
+		
+		if (scopeStack.size() > 1) {
+			scopeStack.pop_back();
+			std::cout << "popping scope" << std::endl;
+		}
+		else {
+			std::cout << "left to just root scope; stopping" << std::endl;
+			canContinue = false;
+			return;
+		}
 		
 		if (!scopeStack.empty()) {
 			currScope = scopeStack.back();
@@ -159,6 +170,7 @@ void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable
 	}
 
 	if (!expr->canEval()) {
+		std::cout << "popping expression" << std::endl;
 		evaluateExpression = false;
 		expressionStack.pop_back();
 	}
@@ -330,11 +342,33 @@ void Interpreter::interpretReturn(Statement* statement) {
 	std::shared_ptr<FunctionFrame> func = std::static_pointer_cast<FunctionFrame>(scopeStack.back());
 	std::shared_ptr<Variable> returnProxy = std::make_shared<Variable>();
 
-	//evalExpression(statement->getChildren()[0], returnProxy);
+	evalExpression(statement->getChildren()[0], returnProxy);
 }
 
 std::shared_ptr<Variable> Interpreter::getVariable(const std::string& varName) {
 	return resolveVariable(varName);
+}
+
+void Interpreter::evalCallArgs(std::shared_ptr<FunctionFrame> func, Statement* body, Statement* call) {
+	Statement* params = body->getChildren()[0];
+
+	std::vector<Statement*>::iterator arg = std::begin(call->getChildren());
+	std::vector<Statement*>::iterator argEnd = std::end(call->getChildren());
+
+	for (auto paramName = std::begin(params->getTokens()), paramEnd = std::end(params->getTokens());
+			paramName != paramEnd; ++paramName) {
+		if (arg != argEnd) {
+			std::shared_ptr<Variable> argVar = std::make_shared<Variable>();
+			evalExpression(*arg, argVar);
+			
+			func->addVariable(paramName->getContent(), argVar);
+
+			++arg;
+		}
+		else {
+			break;
+		}
+	}
 }
 
 inline void Interpreter::lexAllTokens() {

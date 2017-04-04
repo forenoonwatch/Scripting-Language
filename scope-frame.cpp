@@ -27,8 +27,7 @@ std::shared_ptr<Variable> ScopeFrame::getVariable(const std::string& name) {
 	return variableMap[name];
 }
 
-FunctionFrame::FunctionFrame(Statement* scope)
-: ScopeFrame(scope) {}
+FunctionFrame::FunctionFrame(Statement* scope): ScopeFrame(scope) {}
 
 Variable& FunctionFrame::getReturnValue() {
 	return returnValue;

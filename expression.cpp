@@ -31,9 +31,12 @@ void Expression::evalNext() {
 			if (funcVar != nullptr && funcVar->type == Variable::VariableType::FUNCTION
 					&& funcVar->funcValue != nullptr) {
 				std::cout << "interpreting in-expr func call" << std::endl;
-				interpreter.scopeStack.push_back(std::make_shared<FunctionFrame>(funcVar->funcValue));
+				std::shared_ptr<FunctionFrame> funcFrame = std::make_shared<FunctionFrame>(funcVar->funcValue);
+				
+				interpreter.evalCallArgs(funcFrame, funcVar->funcValue, it->getLink());
+				interpreter.scopeStack.push_back(funcFrame);
+				
 				interpreter.evaluateExpression = false;
-
 				expectValue = true;
 				return;
 			}
@@ -102,6 +105,7 @@ void Expression::evalNext() {
 			operators.pop();
 		}
 
+		std::cout << "setting variable" << std::endl;
 		*writeVar = std::move(values.top());
 	}
 }
