@@ -63,7 +63,9 @@ class Interpreter {
 		void interpretVarDecl(Statement*);
 		void interpretVarAssignment(Statement*);
 		void interpretIfStatement(Statement*);
+
 		void interpretFuncDecl(Statement*);
+		void interpretReturn(Statement*);
 
 		void evalExpression(Statement*, std::shared_ptr<Variable>);
 

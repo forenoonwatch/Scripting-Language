@@ -16,6 +16,8 @@ class ScopeFrame {
 		Statement* peekStatement();
 		Statement* getStatement();
 
+		virtual bool isFunction() const;
+
 		void addVariable(const std::string& name, std::shared_ptr<Variable> var);
 
 		std::shared_ptr<Variable> getVariable(const std::string& name);
@@ -31,10 +33,11 @@ class ScopeFrame {
 class FunctionFrame: public ScopeFrame {
 	public:
 		FunctionFrame(Statement*);
-		FunctionFrame(Statement*, std::shared_ptr<Variable>);
 		
-		std::shared_ptr<Variable> getReturnValue();
+		virtual bool isFunction() const override;
+
+		Variable& getReturnValue();
 
 	private:
-		std::shared_ptr<Variable> returnValue;
+		Variable returnValue;
 };

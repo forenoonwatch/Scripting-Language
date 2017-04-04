@@ -17,9 +17,15 @@ class Expression {
 		bool canEval() const;
 		void evalNext();
 
+		void addValue(const Variable& value);
+
+		bool isExpectingValue() const;
+
 		virtual ~Expression() = default;
 	private:
 		Interpreter& interpreter;
+
+		bool expectValue;
 
 		std::stack<Variable> values;
 		std::stack<std::string> operators;

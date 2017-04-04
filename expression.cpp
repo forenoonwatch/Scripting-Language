@@ -3,7 +3,7 @@
 
 Expression::Expression(Interpreter& interp, Statement* expr, std::shared_ptr<Variable> var)
 : interpreter(interp), it(std::begin(expr->getTokens())), end(std::end(expr->getTokens())),
-	writeVar(var) {}
+	writeVar(var), expectValue(false) {}
 
 bool Expression::canEval() const {
 	return it != end;
@@ -30,13 +30,12 @@ void Expression::evalNext() {
 
 			if (funcVar != nullptr && funcVar->type == Variable::VariableType::FUNCTION
 					&& funcVar->funcValue != nullptr) {
-				std::cout << "interpreting in-expr func call" << std::endl;				
-
-				std::shared_ptr<Variable> returnVar = std::make_shared<Variable>();
-				interpreter.scopeStack.push_back(std::make_shared<FunctionFrame>(funcVar->funcValue,
-					returnVar));
-
+				std::cout << "interpreting in-expr func call" << std::endl;
+				interpreter.scopeStack.push_back(std::make_shared<FunctionFrame>(funcVar->funcValue));
 				interpreter.evaluateExpression = false;
+
+				expectValue = true;
+				return;
 			}
 			else {
 				std::cout << "invalid function name" << std::endl;
@@ -105,4 +104,14 @@ void Expression::evalNext() {
 
 		*writeVar = std::move(values.top());
 	}
+}
+
+void Expression::addValue(const Variable& value) {
+	values.push(value);
+	expectValue = false;
+	++it;
+}
+
+bool Expression::isExpectingValue() const {
+	return expectValue;
 }

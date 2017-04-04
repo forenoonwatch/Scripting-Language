@@ -74,11 +74,6 @@ void Interpreter::interpretNextStatement() {
 
 			if (!exp->canEval()) {
 				evaluateExpression = false;
-
-				if (reinterpret_cast<>) {
-					
-				}
-
 				expressionStack.pop_back();
 			}
 		}
@@ -87,6 +82,15 @@ void Interpreter::interpretNextStatement() {
 	std::shared_ptr<ScopeFrame> currScope = scopeStack.back();
 
 	while (canContinue && !currScope->canGetStatement()) {
+		if (currScope->isFunction() && !expressionStack.empty()) {
+			std::shared_ptr<Expression> exp = expressionStack.back();
+
+			if (exp->isExpectingValue()) {
+				exp->addValue(std::static_pointer_cast<FunctionFrame>(currScope)->getReturnValue());
+				evaluateExpression = true;
+			}
+		}
+
 		scopeStack.pop_back();
 
 		std::cout << "popping scope" << std::endl;
@@ -118,6 +122,10 @@ void Interpreter::interpretNextStatement() {
 	else if (stmnt->getType() == Statement::StatementType::FUNC_DECL) {
 		std::cout << "interpreting function declaration" << std::endl;
 		interpretFuncDecl(stmnt);
+	}
+	else if (stmnt->getType() == Statement::StatementType::RETURN) {
+		std::cout << "interpreting return statemenet" << std::endl;
+		interpretReturn(stmnt);
 	}
 	else {
 		std::cout << "skipping " << Statement::typeAsString(stmnt->getType()) << std::endl;
@@ -310,6 +318,19 @@ void Interpreter::interpretIfStatement(Statement* statement) {
 void Interpreter::interpretFuncDecl(Statement* statement) {
 	scopeStack.back()->addVariable(statement->getTokens()[0].getContent(),
 		std::make_shared<Variable>(statement));
+}
+
+void Interpreter::interpretReturn(Statement* statement) {
+	if (scopeStack.size() == 1) {
+		std::cout << "ERROR: trying to return in global scope" << std::endl; // TODO: proper error or have this
+		// be script return value
+		return;
+	}
+
+	std::shared_ptr<FunctionFrame> func = std::static_pointer_cast<FunctionFrame>(scopeStack.back());
+	std::shared_ptr<Variable> returnProxy = std::make_shared<Variable>();
+
+	//evalExpression(statement->getChildren()[0], returnProxy);
 }
 
 std::shared_ptr<Variable> Interpreter::getVariable(const std::string& varName) {

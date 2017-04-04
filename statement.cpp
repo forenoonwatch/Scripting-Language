@@ -26,8 +26,8 @@ std::string Statement::typeAsString(StatementType type) {
 			return "EXPR";
 		case FUNC_CALL:
 			return "CALL";
-		case GROUPING:
-			return "GRUP";
+		case PARAMETERS:
+			return "PARM";
 		case CONDITIONAL:
 			return "COND";
 		case FUNC_DECL:

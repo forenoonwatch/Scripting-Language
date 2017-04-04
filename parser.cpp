@@ -532,7 +532,7 @@ void Parser::consumeFunctionCall() {
 }
 
 void Parser::consumeParamDeclaration() {
-	Statement* paramDecl = new Statement(Statement::StatementType::GROUPING, currRoot);
+	Statement* paramDecl = new Statement(Statement::StatementType::PARAMETERS, currRoot);
 	currRoot->addToken(Token(paramDecl));
 	currRoot = paramDecl;
 

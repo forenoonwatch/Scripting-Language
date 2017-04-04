@@ -15,6 +15,10 @@ Statement* ScopeFrame::getStatement() {
 	return *(currStatement++);
 }
 
+bool ScopeFrame::isFunction() const {
+	return false;
+}
+
 void ScopeFrame::addVariable(const std::string& name, std::shared_ptr<Variable> var) {
 	variableMap.emplace(name, var);
 }
@@ -24,11 +28,12 @@ std::shared_ptr<Variable> ScopeFrame::getVariable(const std::string& name) {
 }
 
 FunctionFrame::FunctionFrame(Statement* scope)
-: ScopeFrame(scope), returnValue(std::make_shared<Variable>()) {}
+: ScopeFrame(scope) {}
 
-FunctionFrame::FunctionFrame(Statement* scope, std::shared_ptr<Variable> var)
-: ScopeFrame(scope), returnValue(var) {}
-
-std::shared_ptr<Variable> FunctionFrame::getReturnValue() {
+Variable& FunctionFrame::getReturnValue() {
 	return returnValue;
+}
+
+bool FunctionFrame::isFunction() const {
+	return true;
 }
