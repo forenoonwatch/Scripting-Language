@@ -1,11 +1,7 @@
 -- test statement script
-
-let x = 21
-let y = 0
-
 fun f(a, b)
-	return 3
-	--return a + b	
+	return a + b
 end
 
-let z = f(x, y)
+let z = f( f(2, 5), 5)
+--z = z + 3

@@ -16,6 +16,7 @@ class Expression {
 
 		bool canEval() const;
 		void evalNext();
+		void finishEval();
 
 		void addValue(const Variable& value);
 

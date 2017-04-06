@@ -30,7 +30,6 @@ void Expression::evalNext() {
 
 			if (funcVar != nullptr && funcVar->type == Variable::VariableType::FUNCTION
 					&& funcVar->funcValue != nullptr) {
-				std::cout << "interpreting in-expr func call" << std::endl;
 				std::shared_ptr<FunctionFrame> funcFrame = std::make_shared<FunctionFrame>(funcVar->funcValue);
 				
 				interpreter.evalCallArgs(funcFrame, funcVar->funcValue, it->getLink());
@@ -89,25 +88,24 @@ void Expression::evalNext() {
 	}
 
 	++it;
+}
 
-	if (it == end) {
-		while (!operators.empty()) {
-			Variable v1 = values.top();
-			values.pop();
+void Expression::finishEval() {
+	while (!operators.empty()) {
+		Variable v1 = values.top();
+		values.pop();
 
-			Variable v2 = values.top();
-			values.pop();
+		Variable v2 = values.top();
+		values.pop();
 			
-			Variable out;
-			interpreter.operatorRegistry.applyOperator(operators.top(), v2, v1, out);
-			values.push(out);
+		Variable out;
+		interpreter.operatorRegistry.applyOperator(operators.top(), v2, v1, out);
+		values.push(out);
 
-			operators.pop();
-		}
-
-		std::cout << "setting variable" << std::endl;
-		*writeVar = std::move(values.top());
+		operators.pop();
 	}
+
+	*writeVar = std::move(values.top());
 }
 
 void Expression::addValue(const Variable& value) {

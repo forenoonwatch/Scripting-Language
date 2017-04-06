@@ -18,6 +18,9 @@ int main(int argc, char** argv) {
 	if (terp.getVariable("z") != nullptr) {
 		std::cout << "z = " << terp.getVariable("z")->intValue << std::endl;
 	}
+	else {
+		std::cout << "z is null" << std::endl;
+	}
 
 	return 0;
 }

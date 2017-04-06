@@ -21,6 +21,8 @@ class Variable {
 		Variable() = default; // TODO: add constructors for various types possibly
 		Variable(Statement* func);
 
+		void cloneInto(Variable&) const;
+
 		virtual ~Variable() = default;
 
 		static void add(const Variable&, const Variable&, Variable&);

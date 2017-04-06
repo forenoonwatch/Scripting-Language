@@ -3,6 +3,15 @@
 
 Variable::Variable(Statement* func): funcValue(func), type(VariableType::FUNCTION) {}
 
+void Variable::cloneInto(Variable& var) const {
+	var.type = type;
+	var.stringValue = stringValue;
+	var.intValue = intValue;
+	var.floatValue = floatValue;
+	var.boolValue = boolValue;
+	var.funcValue = funcValue;
+}
+
 Variable Variable::fromToken(const Token& token) {
 	Variable out;
 

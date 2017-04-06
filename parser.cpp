@@ -1,12 +1,3 @@
-/**
- * Big list of things to do:
- *
- * ADD ERROR HANDLING
- * Excise code for parsing scope and put it into its own function
- * possible trim down code required to expect and accept tokens
- *
- */
-
 #include "parser.hpp"
 #include "script-error.hpp"
 

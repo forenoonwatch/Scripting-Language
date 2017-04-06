@@ -73,7 +73,8 @@ void Interpreter::interpretNextStatement() {
 			}
 
 			if (!exp->canEval()) {
-				std::cout << "popping expression" << std::endl;
+				exp->finishEval();
+				std::cout << "finishing and popping expression" << std::endl;
 				evaluateExpression = false;
 				expressionStack.pop_back();
 			}
@@ -91,7 +92,7 @@ void Interpreter::interpretNextStatement() {
 				evaluateExpression = true;
 				scopeStack.pop_back();
 				std::cout << "back on evaluating expressions; popped scope" << std::endl;
-				break;
+				return;
 			}
 		}
 
@@ -170,7 +171,8 @@ void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable
 	}
 
 	if (!expr->canEval()) {
-		std::cout << "popping expression" << std::endl;
+		expr->finishEval();
+		std::cout << "finishing and popping expression" << std::endl;
 		evaluateExpression = false;
 		expressionStack.pop_back();
 	}
@@ -262,9 +264,9 @@ void Interpreter::interpretVarDecl(Statement* statement) {
 	Statement* expression = statement->getChildren()[0];
 
 	std::shared_ptr<Variable> var = std::make_shared<Variable>();
-	evalExpression(expression, var);
-
 	scopeStack.back()->addVariable(varName, var);
+	
+	evalExpression(expression, var);
 }
 
 void Interpreter::interpretVarAssignment(Statement* statement) {
@@ -343,6 +345,8 @@ void Interpreter::interpretReturn(Statement* statement) {
 	std::shared_ptr<Variable> returnProxy = std::make_shared<Variable>();
 
 	evalExpression(statement->getChildren()[0], returnProxy);
+	
+	returnProxy->cloneInto(func->getReturnValue());
 }
 
 std::shared_ptr<Variable> Interpreter::getVariable(const std::string& varName) {
