@@ -13,7 +13,8 @@ class OperatorRegistry {
 
 		bool isValidOperatorChar(char) const;
 		bool isValidOperator(const std::string& token) const;
-	
+
+		void applyOperator(const std::string&, const Variable&, Variable&) const;
 		void applyOperator(const std::string&, const Variable&, const Variable&, Variable&) const;
 		bool hasPrecedence(const std::string&, const std::string&) const;
 

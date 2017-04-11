@@ -32,6 +32,13 @@ bool OperatorRegistry::isValidOperator(const std::string& token) const {
 	return operatorStrings.find(token) != std::end(operatorStrings);
 }
 
+void OperatorRegistry::applyOperator(const std::string& op, const Variable& var,
+		Variable& out) const {
+	if (op.compare("-") == 0) {
+		Variable::unaryMinus(var, out);
+	}
+}
+
 void OperatorRegistry::applyOperator(const std::string& op, const Variable& lhs,
 		const Variable& rhs, Variable& out) const {
 	

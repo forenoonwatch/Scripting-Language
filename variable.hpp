@@ -35,6 +35,8 @@ class Variable {
 		static void less(const Variable&, const Variable&, Variable&);
 		static void lessEq(const Variable&, const Variable&, Variable&);
 
+		static void unaryMinus(const Variable&, Variable&);
+
 		std::string stringValue;
 		int intValue;
 		double floatValue;

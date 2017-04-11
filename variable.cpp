@@ -326,3 +326,17 @@ void Variable::lessEq(const Variable& a, const Variable& b, Variable& out) {
 		// TODO: runtime error
 	}
 }
+
+void Variable::unaryMinus(const Variable& var, Variable& out) {
+	if (var.type == VariableType::INT) {
+		out.intValue = -var.intValue;
+		out.type = VariableType::INT;
+	}
+	else if (var.type == VariableType::FLOAT) {
+		out.floatValue = -var.floatValue;
+		out.type = VariableType::FLOAT;
+	}
+	else {
+		// TODO: runtime error
+	}
+}

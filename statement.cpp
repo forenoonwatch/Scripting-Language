@@ -16,6 +16,13 @@ void Statement::addToken(Token token) {
 	tokens.push_back(token);
 }
 
+Statement::~Statement() {
+	while (children.size() > 0) {
+		delete children.back();
+		children.pop_back();
+	}
+}
+
 std::string Statement::typeAsString(StatementType type) {
 	switch (type) {
 		case VAR_DECLARATION:

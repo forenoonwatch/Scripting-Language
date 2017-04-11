@@ -30,6 +30,9 @@ class Expression {
 
 		std::stack<Variable> values;
 		std::stack<std::string> operators;
+		std::stack<std::string> unaryOps;
+
+		Token::TokenType lastTokenType;
 
 		std::shared_ptr<Variable> writeVar;
 
