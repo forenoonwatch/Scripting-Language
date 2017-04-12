@@ -42,6 +42,8 @@ void Expression::evalNext() {
 			std::shared_ptr<Variable> funcVar = interpreter.resolveVariable(it->getLink()
 				->getTokens()[0].getContent());
 
+			std::cout << "interpreting function call" << std::endl;
+
 			if (funcVar != nullptr && funcVar->type == Variable::VariableType::FUNCTION
 					&& funcVar->funcValue != nullptr) {
 				std::shared_ptr<FunctionFrame> funcFrame = std::make_shared<FunctionFrame>(funcVar->funcValue);
@@ -136,6 +138,7 @@ void Expression::finishEval() {
 		operators.pop();
 	}
 
+	std::cout << "setting value of " << values.top().intValue << std::endl;
 	*writeVar = std::move(values.top());
 }
 

@@ -1,7 +1,13 @@
 -- test statement script
 
-let z = 2
-z = 8 * -(3 + -z)
+fun f(a, b)
+	return a + b
+end
+
+let z = f( f(2, 5), 5)
+
+--let z = 2
+--z = 8 * -(3 + -z)
 
 --let z = f( f(2, 5), 5)
 --z = z + 3

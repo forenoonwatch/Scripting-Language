@@ -68,15 +68,17 @@ void Interpreter::interpretNextStatement() {
 		else {
 			std::shared_ptr<Expression> exp = expressionStack.back();
 
-			while (evaluateExpression && exp->canEval()) {
-				exp->evalNext();
-			}
+			if (!exp->isExpectingValue()) {
+				while (evaluateExpression && exp->canEval() && !exp->isExpectingValue()) {
+					exp->evalNext();
+				}
 
-			if (!exp->canEval()) {
-				exp->finishEval();
-				std::cout << "finishing and popping expression" << std::endl;
-				evaluateExpression = false;
-				expressionStack.pop_back();
+				if (!exp->canEval()) {
+					exp->finishEval();
+					std::cout << "finishing and popping expression" << std::endl;
+					evaluateExpression = false;
+					expressionStack.pop_back();
+				}
 			}
 		}
 	}
@@ -162,91 +164,24 @@ void Interpreter::parseText() {
 }
 
 void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable> var) {
+	std::cout << "pushing expression onto stack" << std::endl;
+
 	std::shared_ptr<Expression> expr = std::make_shared<Expression>(*this, expression, var);
 	expressionStack.push_back(expr);
 	evaluateExpression = true;
 
-	while (evaluateExpression && expr->canEval()) {
-		expr->evalNext();
-	}
-
-	if (!expr->canEval()) {
-		expr->finishEval();
-		std::cout << "finishing and popping expression" << std::endl;
-		evaluateExpression = false;
-		expressionStack.pop_back();
-	}
-
-	// http://www.geeksforgeeks.org/expression-evaluation/
-	/*std::stack<Variable> values;
-	std::stack<std::string> operators;
-
-	for (auto it = std::begin(expression->getTokens()), end = std::end(expression->getTokens()); it != end; ++it) {
-		if (it->getTokenType() == Token::TokenType::NUMERIC || it->getTokenType() == Token::TokenType::STRING) {
-			values.push(Variable::fromToken(*it));
+	if (!expr->isExpectingValue()) {
+		while (evaluateExpression && expr->canEval() && !expr->isExpectingValue()) {
+			expr->evalNext();
 		}
-		else if (it->getTokenType() == Token::TokenType::IDENTIFIER) {
-			if (it->getContent().compare("true") == 0 || it->getContent().compare("false") == 0) {
-				values.push(Variable::fromToken(*it));
-			}
-			else {
-				values.push(*resolveVariable(it->getContent()));
-			}
-		}
-		else if (it->getContent().compare("(") == 0) {
-			operators.push(it->getContent());
-		}
-		else if (it->getContent().compare(")") == 0) {
-			while (operators.top().compare("(") != 0) {
-				Variable v1 = values.top();
-				values.pop();
 
-				Variable v2 = values.top();
-				values.pop();
-
-				Variable out;
-				operatorRegistry.applyOperator(operators.top(), v2, v1, out);
-				values.push(out);
-
-				operators.pop();
-			}
-
-			operators.pop();
-		}
-		else if (it->getTokenType() == Token::TokenType::OPERATOR) {
-			while (!operators.empty() && operatorRegistry.hasPrecedence(it->getContent(), operators.top())) {
-				Variable v1 = values.top();
-				values.pop();
-
-				Variable v2 = values.top();
-				values.pop();
-				
-				Variable out;
-				operatorRegistry.applyOperator(operators.top(), v2, v1, out);
-				values.push(out);
-
-				operators.pop();
-			}
-
-			operators.push(it->getContent());
+		if (!expr->canEval()) {
+			expr->finishEval();
+			std::cout << "finishing and popping expression" << std::endl;
+			evaluateExpression = false;
+			expressionStack.pop_back();
 		}
 	}
-
-	while (!operators.empty()) {
-		Variable v1 = values.top();
-		values.pop();
-
-		Variable v2 = values.top();
-		values.pop();
-		
-		Variable out;
-		operatorRegistry.applyOperator(operators.top(), v2, v1, out);
-		values.push(out);
-
-		operators.pop();
-	}
-
-	*var = std::move(values.top());*/
 }
 
 std::shared_ptr<Variable> Interpreter::resolveVariable(const std::string& name) {	
@@ -366,6 +301,7 @@ void Interpreter::evalCallArgs(std::shared_ptr<FunctionFrame> func, Statement* b
 			evalExpression(*arg, argVar);
 			
 			func->addVariable(paramName->getContent(), argVar);
+			std::cout << "setting parameter " << paramName->getContent() << " to " << argVar->intValue << std::endl;
 
 			++arg;
 		}
