@@ -124,7 +124,8 @@ void Lexer::consumeOperator() {
 		if (!interpreter.operatorRegistry.isValidOperator(content.str() + nextChar)) {
 			// TODO: check here to make sure current formed token is a valid operator and throw error otherwise
 
-			if (isPossibleOperator(nextChar)) {
+			if (isPossibleOperator(nextChar)
+					&& !interpreter.operatorRegistry.isValidOperatorChar(nextChar)) {
 				errorNextChar("valid operator symbol");
 				return;
 			}

@@ -33,7 +33,7 @@ class Statement {
 
 		StatementType getType() const;
 
-		virtual ~Statement() = default;
+		virtual ~Statement();
 
 		static std::string typeAsString(StatementType type);
 	private:

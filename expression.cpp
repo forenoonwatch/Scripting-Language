@@ -3,7 +3,7 @@
 
 Expression::Expression(Interpreter& interp, Statement* expr, std::shared_ptr<Variable> var)
 : interpreter(interp), it(std::begin(expr->getTokens())), end(std::end(expr->getTokens())),
-	writeVar(var), expectValue(false), lastTokenType(Token::TokenType::OTHER) {}
+	writeVar(var), expectValue(false), lastToken(std::string(), Token::TokenType::OTHER) {}
 
 bool Expression::canEval() const {
 	return it != end;
@@ -81,9 +81,20 @@ void Expression::evalNext() {
 		}
 
 		operators.pop();
+
+		if (!unaryOps.empty()) {
+			Variable var = values.top();
+			values.pop();
+
+			interpreter.operatorRegistry.applyOperator(unaryOps.top(), var, var);
+			values.push(var);
+
+			unaryOps.pop();
+		}
 	}
 	else if (it->getTokenType() == Token::TokenType::OPERATOR) {
-		if (lastTokenType == Token::TokenType::OPERATOR) {
+		if ((lastToken.getTokenType() == Token::TokenType::OPERATOR || lastToken.getTokenType() == Token::TokenType::OTHER)
+				&& lastToken.getContent().compare("(") != 0 && lastToken.getContent().compare(")") != 0) {
 			unaryOps.push(it->getContent());
 		}
 		else {
@@ -106,7 +117,7 @@ void Expression::evalNext() {
 		}
 	}
 
-	lastTokenType = it->getTokenType();
+	lastToken = *it;
 	++it;
 }
 

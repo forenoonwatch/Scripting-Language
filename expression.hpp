@@ -32,7 +32,7 @@ class Expression {
 		std::stack<std::string> operators;
 		std::stack<std::string> unaryOps;
 
-		Token::TokenType lastTokenType;
+		Token lastToken;
 
 		std::shared_ptr<Variable> writeVar;
 
