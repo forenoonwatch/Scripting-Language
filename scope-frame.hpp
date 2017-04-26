@@ -58,3 +58,11 @@ class FunctionFrame: public ScopeFrame {
 		std::vector<Token>::iterator paramName;
 		std::vector<Token>::iterator paramEnd;
 };
+
+class LoopFrame: public ScopeFrame {
+	public:
+		LoopFrame(Statement* body, Statement* condition);
+	private:
+		Statement* body;
+		Statement* condition;
+};
