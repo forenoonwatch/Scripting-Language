@@ -41,7 +41,9 @@ namespace {
 
 Interpreter::Interpreter(std::istream& textStream)
 : lexer(std::make_unique<Lexer>(textStream, *this)),
-parser(std::make_unique<Parser>(*this)), canContinue(true), evaluateExpression(false), cleanFunction(false) {
+	parser(std::make_unique<Parser>(*this)), canContinue(true), evaluateExpression(false), haltFunction(false),
+	returnProxy(std::make_shared<Variable>())
+{
 	operatorRegistry.init();
 }
 
@@ -108,26 +110,14 @@ void Interpreter::interpretNextStatement() {
 	}
 
 	// clean up all scope frames that are not the last innermost function
-	if (cleanFunction) {
-		cleanFunction = false;
+	if (haltFunction) {
+		haltFunction = false;
 
 		std::cout << "cleaning function" << std::endl;
 
 		while (!scopeStack.back()->isFunction()) {
 			std::cout << "\tcleaned scope" << std::endl;
 			scopeStack.pop_back();
-		}
-
-		std::shared_ptr<FunctionFrame> func = std::static_pointer_cast<FunctionFrame>(scopeStack.back());
-
-		std::shared_ptr<Expression> exp = expressionStack.back();
-
-		if (exp->isExpectingValue()) {
-			exp->addValue(func->getReturnValue());
-			evaluateExpression = true;		
-			std::cout << "loaded return in clean; popped function" << std::endl;
-			scopeStack.pop_back(); // pop function scope
-			return;
 		}
 
 		currScope = scopeStack.back();
@@ -139,14 +129,16 @@ void Interpreter::interpretNextStatement() {
 
 			std::shared_ptr<Expression> exp = expressionStack.back();
 
-			/*if (exp->isExpectingValue()) {
+			if (exp->isExpectingValue()) {
+				std::cout << "loaded return value: " << Variable::toString(func->getReturnValue()) << std::endl;
+				returnProxy->cloneInto(func->getReturnValue());
 				exp->addValue(func->getReturnValue());
 				evaluateExpression = true;
 				scopeStack.pop_back();
-				std::cout << "loaded return type" << std::endl;
+				//std::cout << "loaded return type" << std::endl;
 				std::cout << "back on evaluating expressions; popped scope" << std::endl;
 				return;
-			}*/
+			}
 		}
 
 		
@@ -214,11 +206,12 @@ void Interpreter::parseText() {
 	std::cout << "\nSTART OF SCRIPT" << std::endl;
 }
 
-void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable> var) {
+void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable> var,
+		int startOffset) {
 	std::cout << "pushing expression onto stack ("
 		<< (expressionStack.size() + 1) << ")" << std::endl;
 
-	std::shared_ptr<Expression> expr = std::make_shared<Expression>(*this, expression, var);
+	std::shared_ptr<Expression> expr = std::make_shared<Expression>(*this, expression, var, startOffset);
 	expressionStack.push_back(expr);
 	evaluateExpression = true;
 
@@ -235,12 +228,12 @@ void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable
 			evaluateExpression = false;
 			expressionStack.pop_back();
 		}
-
 	}
 }
 
-std::shared_ptr<Variable> Interpreter::resolveVariable(const std::string& name) {	
-	for (int i = scopeStack.size() - 1; i >= 0; --i) {
+std::shared_ptr<Variable> Interpreter::resolveVariable(const std::string& name,
+		int offsetCount) {
+	for (int i = scopeStack.size() - 1 - offsetCount; i >= 0; --i) {
 		if (scopeStack[i]->getVariable(name) != nullptr) {
 			return scopeStack[i]->getVariable(name);
 		}
@@ -345,13 +338,11 @@ void Interpreter::interpretReturn(Statement* statement) {
 		return;
 	}
 
-	std::shared_ptr<Variable> returnProxy = std::make_shared<Variable>();
-
+	//returnProxy = std::make_shared<Variable>();
 	evalExpression(statement->getChildren()[0], returnProxy);
 	
-	returnProxy->cloneInto(func->getReturnValue());
-
-	cleanFunction = true;
+	func->setReturning();
+	haltFunction = true;
 }
 
 std::shared_ptr<Variable> Interpreter::getVariable(const std::string& varName) {

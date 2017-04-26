@@ -1,9 +1,11 @@
 #include "expression.hpp"
 #include "scope-frame.hpp"
 
-Expression::Expression(Interpreter& interp, Statement* expr, std::shared_ptr<Variable> var)
+Expression::Expression(Interpreter& interp, Statement* expr, std::shared_ptr<Variable> var,
+		int startOffset)
 : interpreter(interp), it(std::begin(expr->getTokens())), end(std::end(expr->getTokens())),
-	writeVar(var), expectValue(false), lastToken(std::string(), Token::TokenType::OTHER) {}
+	writeVar(var), expectValue(false), lastToken(std::string(), Token::TokenType::OTHER),
+	startOffset(startOffset) {}
 
 bool Expression::canEval() const {
 	return it != end;
@@ -27,7 +29,7 @@ void Expression::evalNext() {
 			values.push(Variable::fromToken(*it));
 		}
 		else {
-			Variable var = *interpreter.resolveVariable(it->getContent());
+			Variable var = *interpreter.resolveVariable(it->getContent(), startOffset);
 
 			if (!unaryOps.empty()) {
 				interpreter.operatorRegistry.applyOperator(unaryOps.top(), var, var);
@@ -40,7 +42,7 @@ void Expression::evalNext() {
 	else if (it->getTokenType() == Token::TokenType::LINK) {
 		if (it->getLink()->getType() == Statement::StatementType::FUNC_CALL) {
 			std::shared_ptr<Variable> funcVar = interpreter.resolveVariable(it->getLink()
-				->getTokens()[0].getContent());
+				->getTokens()[0].getContent(), startOffset);
 
 			std::cout << "interpreting function call" << std::endl;
 
@@ -138,7 +140,7 @@ void Expression::finishEval() {
 		operators.pop();
 	}
 
-	std::cout << "setting value of " << values.top().intValue << std::endl;
+	std::cout << "setting value of " << Variable::toString(values.top()) << std::endl;
 	*writeVar = std::move(values.top());
 }
 

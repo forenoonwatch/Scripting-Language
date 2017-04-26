@@ -39,7 +39,7 @@ class Interpreter {
 		void setVariable(const std::string& name, double value);
 		void setVariable(const std::string& name, bool value);
 
-		void evalExpression(Statement*, std::shared_ptr<Variable>);
+		void evalExpression(Statement*, std::shared_ptr<Variable>, int startOffset = 0);
 	
 		std::shared_ptr<Variable> getVariable(const std::string& varName);
 
@@ -50,9 +50,10 @@ class Interpreter {
 		ErrorLog errorLog;
 
 		bool canContinue;
-
 		bool evaluateExpression;
-		bool cleanFunction;
+		bool haltFunction;
+
+		std::shared_ptr<Variable> returnProxy;
 
 		std::unique_ptr<Lexer> lexer;
 		std::unique_ptr<Parser> parser;
@@ -60,7 +61,8 @@ class Interpreter {
 		std::vector<std::shared_ptr<ScopeFrame>> scopeStack;
 		std::vector<std::shared_ptr<Expression>> expressionStack;
 
-		std::shared_ptr<Variable> resolveVariable(const std::string& name);
+		std::shared_ptr<Variable> resolveVariable(const std::string& name,
+			int offsetCount = 0);
 
 		void lexAllTokens();
 		void parseAllStatements(); // TODO: possibly interpret while parsing

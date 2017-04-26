@@ -340,3 +340,24 @@ void Variable::unaryMinus(const Variable& var, Variable& out) {
 		// TODO: runtime error
 	}
 }
+
+std::string Variable::toString(const Variable& var) {
+	switch (var.type) {
+		case VariableType::INT:
+			return std::to_string(var.intValue);
+		case VariableType::FLOAT:
+			return std::to_string(var.floatValue);
+		case VariableType::BOOL:
+			return var.boolValue ? "true" : "false";
+		case VariableType::STRING:
+			return var.stringValue;
+		case VariableType::FUNCTION:
+			return "Function";
+		case VariableType::NIL:
+			return "nil";
+		default:
+			return "Unknown Variable Type";
+	}
+
+	return "Unknown Variable Type";
+}

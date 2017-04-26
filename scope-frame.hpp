@@ -13,7 +13,7 @@ class ScopeFrame {
 	public:
 		ScopeFrame(Statement*);
 
-		bool canGetStatement() const;
+		virtual bool canGetStatement() const;
 		Statement* peekStatement();
 		Statement* getStatement();
 
@@ -35,14 +35,17 @@ class FunctionFrame: public ScopeFrame {
 	public:
 		FunctionFrame(Interpreter& interpreter, Statement* scope, Statement* call);
 		
+		virtual bool canGetStatement() const override;
+
 		virtual bool isFunction() const override;
 
 		bool canEvalArg() const;
 		void evalNextArg();
 
 		Variable& getReturnValue();
-
+		void setReturning();
 	private:
+		bool isReturning;
 		Variable returnValue;
 
 		Interpreter& interpreter;

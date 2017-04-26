@@ -12,7 +12,8 @@
 
 class Expression {
 	public:
-		Expression(Interpreter& interp, Statement* expr, std::shared_ptr<Variable> var);
+		Expression(Interpreter& interp, Statement* expr, std::shared_ptr<Variable> var,
+			int startOffset = 0);
 
 		bool canEval() const;
 		void evalNext();
@@ -27,6 +28,8 @@ class Expression {
 		Interpreter& interpreter;
 
 		bool expectValue;
+
+		int startOffset;
 
 		std::stack<Variable> values;
 		std::stack<std::string> operators;

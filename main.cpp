@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
 	//std::cout << "x = " << (terp.getVariable("x")->boolValue ? "true" : "false") << std::endl;
 
 	if (terp.getVariable("z") != nullptr) {
-		std::cout << "z = " << terp.getVariable("z")->intValue << std::endl;
+		std::cout << "z = " << Variable::toString(*terp.getVariable("z")) << std::endl;
 	}
 	else {
 		std::cout << "z is null" << std::endl;

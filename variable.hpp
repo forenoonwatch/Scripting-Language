@@ -37,6 +37,8 @@ class Variable {
 
 		static void unaryMinus(const Variable&, Variable&);
 
+		static std::string toString(const Variable&);
+
 		std::string stringValue;
 		int intValue;
 		double floatValue;
