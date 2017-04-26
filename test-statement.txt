@@ -1,13 +1,11 @@
 -- test statement script
 
-fun f(a, b)
-	return a + b
+fun fib(n)
+	if n <= 2 then
+		return 1
+	end
+
+	return fib(n - 1) + fib(n - 2)
 end
 
-let z = f( f(2, 5), 5)
-
---let z = 2
---z = 8 * -(3 + -z)
-
---let z = f( f(2, 5), 5)
---z = z + 3
+let z = fib(3)

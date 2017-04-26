@@ -17,6 +17,8 @@
 class Lexer;
 class Parser;
 class Expression;
+class ScopeFrame;
+class FunctionFrame;
 
 class Interpreter {
 	public:
@@ -37,6 +39,8 @@ class Interpreter {
 		void setVariable(const std::string& name, double value);
 		void setVariable(const std::string& name, bool value);
 
+		void evalExpression(Statement*, std::shared_ptr<Variable>);
+	
 		std::shared_ptr<Variable> getVariable(const std::string& varName);
 
 		virtual ~Interpreter() = default;
@@ -48,6 +52,7 @@ class Interpreter {
 		bool canContinue;
 
 		bool evaluateExpression;
+		bool cleanFunction;
 
 		std::unique_ptr<Lexer> lexer;
 		std::unique_ptr<Parser> parser;
@@ -67,7 +72,6 @@ class Interpreter {
 		void interpretFuncDecl(Statement*);
 		void interpretReturn(Statement*);
 
-		void evalExpression(Statement*, std::shared_ptr<Variable>);
 		void evalCallArgs(std::shared_ptr<FunctionFrame> func, Statement* body, Statement* call);
 
 		friend class Lexer;

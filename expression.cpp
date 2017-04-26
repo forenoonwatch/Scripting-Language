@@ -46,9 +46,9 @@ void Expression::evalNext() {
 
 			if (funcVar != nullptr && funcVar->type == Variable::VariableType::FUNCTION
 					&& funcVar->funcValue != nullptr) {
-				std::shared_ptr<FunctionFrame> funcFrame = std::make_shared<FunctionFrame>(funcVar->funcValue);
+				std::shared_ptr<FunctionFrame> funcFrame = std::make_shared<FunctionFrame>(interpreter,
+					funcVar->funcValue, it->getLink());
 				
-				interpreter.evalCallArgs(funcFrame, funcVar->funcValue, it->getLink());
 				interpreter.scopeStack.push_back(funcFrame);
 				
 				interpreter.evaluateExpression = false;

@@ -27,7 +27,9 @@ std::shared_ptr<Variable> ScopeFrame::getVariable(const std::string& name) {
 	return variableMap[name];
 }
 
-FunctionFrame::FunctionFrame(Statement* scope): ScopeFrame(scope) {}
+FunctionFrame::FunctionFrame(Interpreter& interpreter, Statement* scope, Statement* call)
+: interpreter(interpreter), ScopeFrame(scope), arg(std::begin(call->getChildren())), argEnd(std::end(call->getChildren())),
+	params(scope->getChildren()[0]), paramName(std::begin(params->getTokens())), paramEnd(std::end(params->getTokens())) {}
 
 Variable& FunctionFrame::getReturnValue() {
 	return returnValue;
@@ -35,4 +37,20 @@ Variable& FunctionFrame::getReturnValue() {
 
 bool FunctionFrame::isFunction() const {
 	return true;
+}
+
+bool FunctionFrame::canEvalArg() const {
+	return paramName != paramEnd && arg != argEnd;
+}
+
+void FunctionFrame::evalNextArg() {
+	std::cout << "setting parameter " << paramName->getContent() << std::endl;
+	
+	std::shared_ptr<Variable> argVar = std::make_shared<Variable>();
+	addVariable(paramName->getContent(), argVar);
+	
+	interpreter.evalExpression(*arg, argVar);
+
+	++arg;
+	++paramName;
 }

@@ -7,6 +7,7 @@
 
 #include "variable.hpp"
 #include "statement.hpp"
+#include "interpreter.hpp"
 
 class ScopeFrame {
 	public:
@@ -32,12 +33,25 @@ class ScopeFrame {
 
 class FunctionFrame: public ScopeFrame {
 	public:
-		FunctionFrame(Statement*);
+		FunctionFrame(Interpreter& interpreter, Statement* scope, Statement* call);
 		
 		virtual bool isFunction() const override;
+
+		bool canEvalArg() const;
+		void evalNextArg();
 
 		Variable& getReturnValue();
 
 	private:
 		Variable returnValue;
+
+		Interpreter& interpreter;
+		
+		std::vector<Statement*>::iterator arg;
+		std::vector<Statement*>::iterator argEnd;
+
+		Statement* params;
+		
+		std::vector<Token>::iterator paramName;
+		std::vector<Token>::iterator paramEnd;
 };

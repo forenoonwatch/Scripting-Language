@@ -41,7 +41,7 @@ namespace {
 
 Interpreter::Interpreter(std::istream& textStream)
 : lexer(std::make_unique<Lexer>(textStream, *this)),
-parser(std::make_unique<Parser>(*this)), canContinue(true), evaluateExpression(false) {
+parser(std::make_unique<Parser>(*this)), canContinue(true), evaluateExpression(false), cleanFunction(false) {
 	operatorRegistry.init();
 }
 
@@ -61,6 +61,10 @@ void Interpreter::interpretNextStatement() {
 		- 
 	*/
 
+	std::cout << "---" << std::endl;
+
+	std::shared_ptr<ScopeFrame> currScope = scopeStack.back();
+	
 	if (evaluateExpression) {
 		if (expressionStack.empty()) {
 			evaluateExpression = false;
@@ -75,27 +79,74 @@ void Interpreter::interpretNextStatement() {
 
 				if (!exp->canEval()) {
 					exp->finishEval();
-					std::cout << "finishing and popping expression" << std::endl;
+					std::cout << "finishing and popping expression ("
+						<< (expressionStack.size() - 1) << ")" << std::endl;
+
 					evaluateExpression = false;
 					expressionStack.pop_back();
+
+					/*if (currScope->isFunction()) {
+						std::shared_ptr<FunctionFrame> func = std::static_pointer_cast<FunctionFrame>(currScope);
+
+						if (func->canEvalArg()) {
+							func->evalNextArg();
+						}
+					}*/
 				}
 			}
 		}
 	}
 
-	std::shared_ptr<ScopeFrame> currScope = scopeStack.back();
+	if (currScope->isFunction()) {
+		std::shared_ptr<FunctionFrame> func = std::static_pointer_cast<FunctionFrame>(currScope);
+
+		if (func->canEvalArg()) {
+			std::cout << "Evaluating argument" << std::endl;
+			func->evalNextArg();
+			return;
+		}
+	}
+
+	// clean up all scope frames that are not the last innermost function
+	if (cleanFunction) {
+		cleanFunction = false;
+
+		std::cout << "cleaning function" << std::endl;
+
+		while (!scopeStack.back()->isFunction()) {
+			std::cout << "\tcleaned scope" << std::endl;
+			scopeStack.pop_back();
+		}
+
+		std::shared_ptr<FunctionFrame> func = std::static_pointer_cast<FunctionFrame>(scopeStack.back());
+
+		std::shared_ptr<Expression> exp = expressionStack.back();
+
+		if (exp->isExpectingValue()) {
+			exp->addValue(func->getReturnValue());
+			evaluateExpression = true;		
+			std::cout << "loaded return in clean; popped function" << std::endl;
+			scopeStack.pop_back(); // pop function scope
+			return;
+		}
+
+		currScope = scopeStack.back();
+	}
 
 	while (canContinue && !currScope->canGetStatement()) {
 		if (currScope->isFunction() && !expressionStack.empty()) {
+			std::shared_ptr<FunctionFrame> func = std::static_pointer_cast<FunctionFrame>(currScope);
+
 			std::shared_ptr<Expression> exp = expressionStack.back();
 
-			if (exp->isExpectingValue()) {
-				exp->addValue(std::static_pointer_cast<FunctionFrame>(currScope)->getReturnValue());
+			/*if (exp->isExpectingValue()) {
+				exp->addValue(func->getReturnValue());
 				evaluateExpression = true;
 				scopeStack.pop_back();
+				std::cout << "loaded return type" << std::endl;
 				std::cout << "back on evaluating expressions; popped scope" << std::endl;
 				return;
-			}
+			}*/
 		}
 
 		
@@ -164,7 +215,8 @@ void Interpreter::parseText() {
 }
 
 void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable> var) {
-	std::cout << "pushing expression onto stack" << std::endl;
+	std::cout << "pushing expression onto stack ("
+		<< (expressionStack.size() + 1) << ")" << std::endl;
 
 	std::shared_ptr<Expression> expr = std::make_shared<Expression>(*this, expression, var);
 	expressionStack.push_back(expr);
@@ -177,10 +229,13 @@ void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable
 
 		if (!expr->canEval()) {
 			expr->finishEval();
-			std::cout << "finishing and popping expression" << std::endl;
+			std::cout << "finishing and popping expression ("
+						<< (expressionStack.size() - 1) << ")" << std::endl;
+
 			evaluateExpression = false;
 			expressionStack.pop_back();
 		}
+
 	}
 }
 
@@ -276,12 +331,27 @@ void Interpreter::interpretReturn(Statement* statement) {
 		return;
 	}
 
-	std::shared_ptr<FunctionFrame> func = std::static_pointer_cast<FunctionFrame>(scopeStack.back());
+	std::shared_ptr<FunctionFrame> func = nullptr;
+
+	for (int i = scopeStack.size() - 1; i > 0; --i) {
+		if (scopeStack[i]->isFunction()) {
+			func = std::static_pointer_cast<FunctionFrame>(scopeStack[i]);
+			break;
+		}
+	}
+
+	if (func == nullptr) {
+		std::cout << "ERROR: no function found to return from" << std::endl;
+		return;
+	}
+
 	std::shared_ptr<Variable> returnProxy = std::make_shared<Variable>();
 
 	evalExpression(statement->getChildren()[0], returnProxy);
 	
 	returnProxy->cloneInto(func->getReturnValue());
+
+	cleanFunction = true;
 }
 
 std::shared_ptr<Variable> Interpreter::getVariable(const std::string& varName) {
