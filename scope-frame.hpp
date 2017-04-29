@@ -42,10 +42,17 @@ class FunctionFrame: public ScopeFrame {
 		bool canEvalArg() const;
 		void evalNextArg();
 
+		void setBaseExpression(int);
+		int getBaseExpression() const;
+
 		Variable& getReturnValue();
+
 		void setReturning();
+		bool getIsReturning() const;
 	private:
 		bool isReturning;
+		int baseExpression;
+
 		Variable returnValue;
 
 		Interpreter& interpreter;

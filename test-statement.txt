@@ -8,4 +8,4 @@ fun fib(n)
 	return fib(n - 1) + fib(n - 2)
 end
 
-let z = fib(3)
+let z = fib(5)--fib(3)

@@ -43,6 +43,10 @@ void FunctionFrame::setReturning() {
 	isReturning = true;
 }
 
+bool FunctionFrame::getIsReturning() const {
+	return isReturning;
+}
+
 bool FunctionFrame::isFunction() const {
 	return true;
 }
@@ -60,4 +64,12 @@ void FunctionFrame::evalNextArg() {
 
 	++arg;
 	++paramName;
+}
+
+void FunctionFrame::setBaseExpression(int baseExpression) {
+	this->baseExpression = baseExpression;
+}
+
+int FunctionFrame::getBaseExpression() const {
+	return baseExpression;
 }

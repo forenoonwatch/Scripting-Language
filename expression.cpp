@@ -48,13 +48,12 @@ void Expression::evalNext() {
 
 			if (funcVar != nullptr && funcVar->type == Variable::VariableType::FUNCTION
 					&& funcVar->funcValue != nullptr) {
-				std::shared_ptr<FunctionFrame> funcFrame = std::make_shared<FunctionFrame>(interpreter,
-					funcVar->funcValue, it->getLink());
-				
-				interpreter.scopeStack.push_back(funcFrame);
+				interpreter.addFunctionCall(funcVar->funcValue, it->getLink());
 				
 				interpreter.evaluateExpression = false;
 				expectValue = true;
+
+				lastToken = *it;
 				return;
 			}
 			else {
@@ -100,8 +99,11 @@ void Expression::evalNext() {
 		if ((lastToken.getTokenType() == Token::TokenType::OPERATOR || lastToken.getTokenType() == Token::TokenType::OTHER)
 				&& lastToken.getContent().compare("(") != 0 && lastToken.getContent().compare(")") != 0) {
 			unaryOps.push(it->getContent());
+			std::cout << "loaded unary operator" << std::endl;
 		}
 		else {
+			std::cout << "loaded binary operator" << std::endl;
+
 			while (!operators.empty()
 					&& interpreter.operatorRegistry.hasPrecedence(it->getContent(), operators.top())) {
 				Variable v1 = values.top();
@@ -148,6 +150,8 @@ void Expression::addValue(const Variable& value) {
 	values.push(value);
 	expectValue = false;
 	++it;
+
+	std::cout << "Added value of " << Variable::toString(value) << "; expression can continue" << std::endl;
 }
 
 bool Expression::isExpectingValue() const {
