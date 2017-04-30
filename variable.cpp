@@ -16,8 +16,36 @@ void Variable::cloneInto(Variable& var) const {
 }
 
 void Variable::operator()(std::vector<std::shared_ptr<Variable>>& args,
-		std::shared_ptr<Variable> ret) const {
-	efValue(args, ret);
+		std::shared_ptr<Variable> ret, Interpreter& terp) const {
+	efValue(args, ret, terp);
+}
+
+double Variable::getAsFloat() const {
+	if (type == VariableType::FLOAT) {
+		return floatValue;
+	}
+	else if (type == VariableType::INT) {
+		return intValue;
+	}
+	else if (type == VariableType::BOOL) {
+		return boolValue ? 1 : 0;
+	}
+	
+	return 0;
+}
+
+int Variable::getAsInt() const {
+	if (type == VariableType::FLOAT) {
+		return static_cast<int>(floatValue);
+	}
+	else if (type == VariableType::INT) {
+		return intValue;
+	}
+	else if (type == VariableType::BOOL) {
+		return boolValue ? 1 : 0;
+	}
+	
+	return 0;
 }
 
 Variable Variable::fromToken(const Token& token) {

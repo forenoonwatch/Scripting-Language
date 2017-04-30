@@ -13,16 +13,20 @@
 #include "variable.hpp"
 #include "scope-frame.hpp"
 #include "expression.hpp"
+#include "default-lib.hpp"
 
 class Lexer;
 class Parser;
+
 class Expression;
 class ScopeFrame;
 class FunctionFrame;
 
+class DefaultLibrary;
+
 class Interpreter {
 	public:
-		Interpreter(std::istream& textStream);
+		Interpreter(std::istream& textStream, bool useDefaultLib = true);
 
 		void parseText();
 
@@ -45,8 +49,6 @@ class Interpreter {
 		void setVariable(const std::string& name, int value);
 		void setVariable(const std::string& name, double value);
 		void setVariable(const std::string& name, bool value);
-
-		void evalExpression(Statement*, std::shared_ptr<Variable>, int startOffset = 0);
 	
 		std::shared_ptr<Variable> getVariable(const std::string& varName);
 
@@ -64,6 +66,7 @@ class Interpreter {
 
 		std::unique_ptr<Lexer> lexer;
 		std::unique_ptr<Parser> parser;
+		std::unique_ptr<DefaultLibrary> defaultLib;
 
 		std::vector<std::shared_ptr<ScopeFrame>> scopeStack;
 		std::vector<std::shared_ptr<Expression>> expressionStack;
@@ -74,6 +77,8 @@ class Interpreter {
 
 		std::shared_ptr<Variable> resolveVariable(const std::string& name,
 			int offsetCount = 0);
+
+		void evalExpression(Statement*, std::shared_ptr<Variable>, int startOffset = 0);
 
 		void addFunctionCall(Statement* body, Statement* call);
 		void addFunctionCall(Statement* scope, std::shared_ptr<Variable> externalCall);
@@ -86,6 +91,7 @@ class Interpreter {
 		void interpretIfStatement(Statement*);
 
 		void interpretFuncDecl(Statement*);
+		void interpretFuncCall(Statement*);
 		void interpretReturn(Statement*);
 
 		void cleanAfterExpression();
@@ -94,4 +100,5 @@ class Interpreter {
 		friend class Parser;
 		friend class Expression;
 		friend class FunctionFrame;
+		friend class DefaultLibrary;
 };

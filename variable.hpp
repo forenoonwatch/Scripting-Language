@@ -7,9 +7,10 @@
 #include <memory>
 
 class Variable;
+class Interpreter;
 
 typedef void (*ExternalFunction)(std::vector<std::shared_ptr<Variable>>&,
-	std::shared_ptr<Variable>);
+	std::shared_ptr<Variable>, Interpreter&);
 
 class Variable {
 	public:
@@ -33,7 +34,10 @@ class Variable {
 		void cloneInto(Variable&) const;
 
 		void operator()(std::vector<std::shared_ptr<Variable>>&,
-			std::shared_ptr<Variable>) const;
+			std::shared_ptr<Variable>, Interpreter&) const;
+
+		double getAsFloat() const;
+		int getAsInt() const;
 
 		virtual ~Variable() = default;
 

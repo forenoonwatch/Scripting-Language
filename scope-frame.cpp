@@ -117,7 +117,7 @@ void FunctionFrame::doExternalCall() {
 
 	std::shared_ptr<Variable> returnProxy = std::make_shared<Variable>();
 	
-	(*externalCall)(vArgs, returnProxy);
+	(*externalCall)(vArgs, returnProxy, interpreter);
 
 	returnValue = *returnProxy;
 }

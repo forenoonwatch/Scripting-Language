@@ -1,23 +1,11 @@
 #include <iostream>
 #include <fstream>
-#include <chrono>
 #include "interpreter.hpp"
 
-namespace Time {
-	std::chrono::high_resolution_clock::time_point start
-		= std::chrono::high_resolution_clock::now();
-
-	double getTime() {
-		using namespace std::chrono;
-		return duration_cast<duration<double>>(high_resolution_clock::now()
-			- start).count();
-	}
-};
-
 std::unique_ptr<Interpreter> terp;
-double lastYield;
 
-void add(std::vector<std::shared_ptr<Variable>>& args, std::shared_ptr<Variable> out) {
+void add(std::vector<std::shared_ptr<Variable>>& args, std::shared_ptr<Variable> out,
+		Interpreter& interp) {
 	out->type = Variable::VariableType::INT;
 	out->intValue = args[0]->intValue - args[1]->intValue;
 
@@ -27,15 +15,7 @@ void add(std::vector<std::shared_ptr<Variable>>& args, std::shared_ptr<Variable>
 	}
 }
 
-void yield(std::vector<std::shared_ptr<Variable>>&, std::shared_ptr<Variable>) {
-	std::cout << "YIELDING" << std::endl;
-	terp->setYielded(true);
-	lastYield = Time::getTime();
-}
-
 int main(int argc, char** argv) {
-	lastYield = 0;
-
 	std::ifstream inFile("test-statement.txt"); // TODO: not hardcode
 	terp = std::make_unique<Interpreter>(inFile);
 
@@ -43,15 +23,10 @@ int main(int argc, char** argv) {
 	inFile.close();
 
 	terp->addExternalFunc("add", add);
-	terp->addExternalFunc("yield", yield);
 
 	while (terp->isRunning()) {
 		if (terp->hasScriptEvents()) {
 			terp->processScript();
-		}
-
-		if (terp->isYielded() && (Time::getTime() - lastYield) >= 5) {
-			terp->setYielded(false);
 		}
 	}
 

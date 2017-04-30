@@ -1,4 +1,6 @@
 #include "interpreter.hpp"
+#include "default-lib.hpp"
+
 #include <iostream>
 
 namespace {
@@ -38,11 +40,16 @@ namespace {
 	}
 };
 
-Interpreter::Interpreter(std::istream& textStream)
+Interpreter::Interpreter(std::istream& textStream, bool useDefaultLib)
 : lexer(std::make_unique<Lexer>(textStream, *this)),
 	parser(std::make_unique<Parser>(*this)), canContinue(true), evaluateExpression(false),
-	returnProxy(std::make_shared<Variable>()), scriptYielded(false) {
+	returnProxy(std::make_shared<Variable>()), scriptYielded(false),
+		defaultLib(nullptr) {
 	operatorRegistry.init();
+
+	if (useDefaultLib) {
+		defaultLib = std::make_unique<DefaultLibrary>(*this);
+	}
 }
 
 bool Interpreter::isRunning() const {
@@ -50,6 +57,10 @@ bool Interpreter::isRunning() const {
 }
 
 bool Interpreter::hasScriptEvents() const {
+	if (defaultLib != nullptr) {
+		defaultLib->update();
+	}
+	
 	return canInterpretStatement();
 }
 
@@ -159,6 +170,10 @@ void Interpreter::interpretNextStatement() {
 		errorLog.logDebug("interpreting function declaration");
 		interpretFuncDecl(stmnt);
 	}
+	else if (stmnt->getType() == Statement::StatementType::FUNC_CALL) {
+		errorLog.logDebug("interpreting function call");
+		interpretFuncCall(stmnt);
+	}
 	else if (stmnt->getType() == Statement::StatementType::RETURN) {
 		errorLog.logDebug("interpreting return statement");
 		interpretReturn(stmnt);
@@ -188,6 +203,10 @@ void Interpreter::parseText() {
 
 	if (errorLog.getLogDepth() >= ErrorLog::LogDepth::DEBUG) {
 		printAllChildren(parser->root);
+	}
+
+	if (defaultLib != nullptr) {
+		defaultLib->loadExternalFunctions();
 	}
 	
 	errorLog.logDebug("\nSTART OF SCRIPT");
@@ -306,6 +325,26 @@ void Interpreter::interpretFuncDecl(Statement* statement) {
 		std::make_shared<Variable>(statement));
 }
 
+void Interpreter::interpretFuncCall(Statement* call) {
+	std::shared_ptr<Variable> funcVar = resolveVariable(call->getTokens()[0].getContent());
+	
+	errorLog.logDebug("interpreting direct function call");
+
+	if (funcVar != nullptr && (funcVar->type == Variable::VariableType::FUNCTION
+			|| funcVar->type == Variable::VariableType::EXTERNAL_FUNC)) {
+		if (funcVar->type == Variable::VariableType::FUNCTION) {
+			addFunctionCall(funcVar->funcValue, call);
+		}
+		else {
+			addFunctionCall(call, funcVar);
+		}
+	}
+	else {
+		errorLog.logError("invalid function name");
+		// TODO: runtime error
+	}
+}
+
 void Interpreter::interpretReturn(Statement* statement) {
 	if (scopeStack.size() == 1) {
 		errorLog.logError("ERROR: trying to return in global scope"); // TODO: proper error or have this
@@ -366,13 +405,15 @@ void Interpreter::cleanAfterExpression() {
 				scopeStack.pop_back();
 			}
 
-			std::shared_ptr<Expression> exp = expressionStack.back();
+			if (!expressionStack.empty()) {
+				std::shared_ptr<Expression> exp = expressionStack.back();
 			
-			if (exp->isExpectingValue()) {
-				exp->addValue(*returnProxy);
-				evaluateExpression = true;
-				errorLog.logDebug("loaded return value: "
-					+ Variable::toString(*returnProxy));
+				if (exp->isExpectingValue()) {
+					exp->addValue(*returnProxy);
+					evaluateExpression = true;
+					errorLog.logDebug("loaded return value: "
+						+ Variable::toString(*returnProxy));
+				}
 			}
 
 			errorLog.logDebug("popping function scope");
