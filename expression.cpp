@@ -46,10 +46,17 @@ void Expression::evalNext() {
 
 			std::cout << "interpreting function call" << std::endl;
 
-			if (funcVar != nullptr && funcVar->type == Variable::VariableType::FUNCTION
-					&& funcVar->funcValue != nullptr) {
-				interpreter.addFunctionCall(funcVar->funcValue, it->getLink());
+			if (funcVar != nullptr
+					&& (funcVar->type == Variable::VariableType::FUNCTION
+					|| funcVar->type == Variable::VariableType::EXTERNAL_FUNC)) {
 				
+				if (funcVar->type == Variable::VariableType::FUNCTION) {
+					interpreter.addFunctionCall(funcVar->funcValue, it->getLink());
+				}
+				else {
+					interpreter.addFunctionCall(it->getLink(), funcVar);
+				}
+
 				interpreter.evaluateExpression = false;
 				expectValue = true;
 

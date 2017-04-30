@@ -3,6 +3,13 @@
 #include "token.hpp"
 #include "statement.hpp"
 #include <string>
+#include <vector>
+#include <memory>
+
+class Variable;
+
+typedef void (*ExternalFunction)(std::vector<std::shared_ptr<Variable>>&,
+	std::shared_ptr<Variable>);
 
 class Variable {
 	public:
@@ -12,6 +19,7 @@ class Variable {
 			FLOAT,
 			BOOL,
 			FUNCTION,
+			EXTERNAL_FUNC,
 			NIL,
 			OTHER
 		};
@@ -20,8 +28,12 @@ class Variable {
 
 		Variable() = default; // TODO: add constructors for various types possibly
 		Variable(Statement* func);
+		Variable(ExternalFunction func);
 
 		void cloneInto(Variable&) const;
+
+		void operator()(std::vector<std::shared_ptr<Variable>>&,
+			std::shared_ptr<Variable>) const;
 
 		virtual ~Variable() = default;
 
@@ -44,6 +56,7 @@ class Variable {
 		double floatValue;
 		bool boolValue;
 		Statement* funcValue;
+		ExternalFunction efValue;
 
 		VariableType type = VariableType::OTHER;
 };

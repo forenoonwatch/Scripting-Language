@@ -47,19 +47,25 @@ Interpreter::Interpreter(std::istream& textStream)
 	operatorRegistry.init();
 }
 
+bool Interpreter::isRunning() const {
+	return canContinue;
+}
+
+bool Interpreter::hasScriptEvents() const {
+	return canContinue;
+}
+
+void Interpreter::processScript() {
+	while (canInterpretStatement()) {
+		interpretNextStatement();
+	}
+}
+
 void Interpreter::interpretNextStatement() {
 	/*
 		Interpreting strategy:
 
 		- interpretNext() is called by user which interprets all statements until program is paused or yielded
-		- each scope requires its own iterator, since program can pause or be yielded at any moment
-		- therefore, a stack<iterator> is required, with root-iterator at the bottom, and each scope pushing and popping
-		- their iterator
-		- BETTER LONG TERM IDEA: have a ScopeInfo class with statement iterator data, memory allocation data,
-		  scope only function data, etc
-		- variable resolution can be done working through the stack
-		- stack must be a std::vector<std::shared_ptr<ScopeInfo>>
-
 		- 
 	*/
 
@@ -105,45 +111,24 @@ void Interpreter::interpretNextStatement() {
 			func->evalNextArg();
 			return;
 		}
+		else {
+			if (func->isExternalFunction()) {
+				std::cout << "Calling external function" << std::endl;
+
+				func->doExternalCall();
+				func->getReturnValue().cloneInto(*returnProxy);
+
+				func->setBaseExpression(expressionStack.size());
+				func->setReturning();
+
+				cleanAfterExpression();
+
+				return;
+			}
+		}
 	}
 
-	// clean up all scope frames that are not the last innermost function
-	/*if (haltFunction) {
-		haltFunction = false;
-
-		std::cout << "cleaning function" << std::endl;
-
-		while (!scopeStack.back()->isFunction()) {
-			std::cout << "\tcleaned scope" << std::endl;
-			scopeStack.pop_back();
-		}
-
-		return;
-	}*/
-
-	// Possible spotted issue to solve:
-	// return expressions need to be completely evaluated before
-	// function scope is cleaned up and popped
-
 	while (canContinue && !currScope->canGetStatement()) {
-		if (currScope->isFunction() && !expressionStack.empty()) {
-			std::shared_ptr<FunctionFrame> func = std::static_pointer_cast<FunctionFrame>(currScope);
-
-			/*std::shared_ptr<Expression> exp = expressionStack.back();
-
-			if (exp->isExpectingValue()) {
-				std::cout << "loaded return value: " << Variable::toString(func->getReturnValue()) << std::endl;
-				returnProxy->cloneInto(func->getReturnValue());
-				exp->addValue(func->getReturnValue());
-				evaluateExpression = true;
-				scopeStack.pop_back();
-				//std::cout << "loaded return type" << std::endl;
-				std::cout << "back on evaluating expressions; popped scope" << std::endl;
-				return;
-			}*/
-		}
-
-		
 		if (scopeStack.size() > 1) {
 			scopeStack.pop_back();
 			std::cout << "popping scope" << std::endl;
@@ -193,6 +178,11 @@ void Interpreter::interpretNextStatement() {
 
 bool Interpreter::canInterpretStatement() const {
 	return canContinue;
+}
+
+void Interpreter::addExternalFunc(const std::string& name, ExternalFunction func) {
+	std::shared_ptr<ScopeFrame> root = scopeStack[0];
+	root->addVariable(name, std::make_shared<Variable>(func));
 }
 
 void Interpreter::parseText() {
@@ -328,21 +318,13 @@ void Interpreter::interpretReturn(Statement* statement) {
 		return;
 	}
 
-	std::shared_ptr<FunctionFrame> func = nullptr;
-
-	for (int i = scopeStack.size() - 1; i > 0; --i) {
-		if (scopeStack[i]->isFunction()) {
-			func = std::static_pointer_cast<FunctionFrame>(scopeStack[i]);
-			break;
-		}
-	}
-
-	if (func == nullptr) {
+	if (functionStack.empty()) {
 		std::cout << "ERROR: no function found to return from" << std::endl;
 		return;
 	}
 
-	//returnProxy = std::make_shared<Variable>();
+	std::shared_ptr<FunctionFrame> func = functionStack.back();
+
 	func->setBaseExpression(expressionStack.size());
 	func->setReturning();
 	std::cout << "flagging return with halt level = " << expressionStack.size() << std::endl;
@@ -354,32 +336,18 @@ std::shared_ptr<Variable> Interpreter::getVariable(const std::string& varName) {
 	return resolveVariable(varName);
 }
 
-void Interpreter::evalCallArgs(std::shared_ptr<FunctionFrame> func, Statement* body, Statement* call) {
-	Statement* params = body->getChildren()[0];
-
-	std::vector<Statement*>::iterator arg = std::begin(call->getChildren());
-	std::vector<Statement*>::iterator argEnd = std::end(call->getChildren());
-
-	for (auto paramName = std::begin(params->getTokens()), paramEnd = std::end(params->getTokens());
-			paramName != paramEnd; ++paramName) {
-		if (arg != argEnd) {
-			std::shared_ptr<Variable> argVar = std::make_shared<Variable>();
-			evalExpression(*arg, argVar);
-			
-			func->addVariable(paramName->getContent(), argVar);
-			std::cout << "setting parameter " << paramName->getContent() << " to " << argVar->intValue << std::endl;
-
-			++arg;
-		}
-		else {
-			break;
-		}
-	}
-}
-
 void Interpreter::addFunctionCall(Statement* body, Statement* call) {
 	std::shared_ptr<FunctionFrame> func = std::make_shared<FunctionFrame>(*this,
 		body, call);
+
+	scopeStack.push_back(func);
+	functionStack.push_back(func);
+}
+
+void Interpreter::addFunctionCall(Statement* scope,
+		std::shared_ptr<Variable> externalCall) {
+	std::shared_ptr<FunctionFrame> func = std::make_shared<FunctionFrame>(*this,
+		scope, externalCall);
 
 	scopeStack.push_back(func);
 	functionStack.push_back(func);

@@ -25,9 +25,13 @@ class Interpreter {
 		Interpreter(std::istream& textStream);
 
 		void parseText();
-		void interpretNextStatement();
 
-		bool canInterpretStatement() const;
+		bool isRunning() const;
+		bool hasScriptEvents() const;
+
+		void processScript();
+
+		void addExternalFunc(const std::string& name, ExternalFunction func);
 
 		void createVariable(const std::string& name, const std::string& value);
 		void createVariable(const std::string& name, int value);
@@ -61,10 +65,14 @@ class Interpreter {
 		std::vector<std::shared_ptr<Expression>> expressionStack;
 		std::vector<std::shared_ptr<FunctionFrame>> functionStack;
 
+		void interpretNextStatement();
+		bool canInterpretStatement() const;
+
 		std::shared_ptr<Variable> resolveVariable(const std::string& name,
 			int offsetCount = 0);
 
 		void addFunctionCall(Statement* body, Statement* call);
+		void addFunctionCall(Statement* scope, std::shared_ptr<Variable> externalCall);
 
 		void lexAllTokens();
 		void parseAllStatements(); // TODO: possibly interpret while parsing
@@ -77,8 +85,6 @@ class Interpreter {
 		void interpretReturn(Statement*);
 
 		void cleanAfterExpression();
-
-		void evalCallArgs(std::shared_ptr<FunctionFrame> func, Statement* body, Statement* call);
 
 		friend class Lexer;
 		friend class Parser;

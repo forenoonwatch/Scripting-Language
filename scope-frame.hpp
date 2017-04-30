@@ -24,6 +24,8 @@ class ScopeFrame {
 		std::shared_ptr<Variable> getVariable(const std::string& name);
 
 		virtual ~ScopeFrame() = default;
+	protected:
+		void writeVarsToVector(std::vector<std::shared_ptr<Variable>>&) const;
 	private:
 		std::map<std::string, std::shared_ptr<Variable>> variableMap;
 
@@ -34,16 +36,21 @@ class ScopeFrame {
 class FunctionFrame: public ScopeFrame {
 	public:
 		FunctionFrame(Interpreter& interpreter, Statement* scope, Statement* call);
+		FunctionFrame(Interpreter& interpreter,
+			Statement* call, std::shared_ptr<Variable> externalCall);
 		
 		virtual bool canGetStatement() const override;
 
 		virtual bool isFunction() const override;
+		bool isExternalFunction() const;
 
 		bool canEvalArg() const;
 		void evalNextArg();
 
 		void setBaseExpression(int);
 		int getBaseExpression() const;
+
+		void doExternalCall();
 
 		Variable& getReturnValue();
 
@@ -57,6 +64,8 @@ class FunctionFrame: public ScopeFrame {
 
 		Interpreter& interpreter;
 		
+		std::shared_ptr<Variable> externalCall;
+
 		std::vector<Statement*>::iterator arg;
 		std::vector<Statement*>::iterator argEnd;
 

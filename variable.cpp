@@ -3,6 +3,9 @@
 
 Variable::Variable(Statement* func): funcValue(func), type(VariableType::FUNCTION) {}
 
+Variable::Variable(ExternalFunction func): efValue(func),
+	type(VariableType::EXTERNAL_FUNC) {}
+
 void Variable::cloneInto(Variable& var) const {
 	var.type = type;
 	var.stringValue = stringValue;
@@ -10,6 +13,11 @@ void Variable::cloneInto(Variable& var) const {
 	var.floatValue = floatValue;
 	var.boolValue = boolValue;
 	var.funcValue = funcValue;
+}
+
+void Variable::operator()(std::vector<std::shared_ptr<Variable>>& args,
+		std::shared_ptr<Variable> ret) const {
+	efValue(args, ret);
 }
 
 Variable Variable::fromToken(const Token& token) {
