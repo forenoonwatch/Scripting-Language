@@ -43,5 +43,7 @@ class Lexer {
 		static bool isNumericLiteral(char);
 		static bool isNumericLiteralStart(char);
 		static bool isStringLiteral(char);
-		static bool isPossibleOperator(char); 
+		static bool isPossibleOperator(char);
+
+		static std::string resolveString(const std::string&);	
 };

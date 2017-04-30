@@ -3,6 +3,27 @@
 #include <sstream>
 #include <cctype>
 
+namespace {
+	char getControlChar(char code) {
+		switch (code) {
+			case 'r':
+				return '\r';
+			case 'n':
+				return '\n';
+			case 't':
+				return '\t';
+			case '\'':
+				return '\'';
+			case '"':
+				return '"';
+			default:
+				return '\0';
+		}
+
+		return '\0';
+	}
+};
+
 Lexer::Lexer(std::istream& textStream, Interpreter& interpreter)
 : textStream(textStream), interpreter(interpreter), canContinue(true) {}
 
@@ -43,7 +64,6 @@ void Lexer::consumeWhitespace() {
 
 		if (!createdEndline && nextChar == '\n') {
 			createdEndline = true;
-			//interpreter.tokenStream.addToken(";", Token::TokenType::OPERATOR);
 		}
 	}
 	while (canConsumeToken() && isWhitespace(textStream.peek()));
@@ -79,7 +99,7 @@ void Lexer::consumeStringLiteral() {
 	std::stringstream content;
 	char nextChar;
 
-	content << static_cast<char>(textStream.get()); // consume first '"'
+	textStream.get(); // ignore first '"'
 
 	while (canConsumeToken()) {
 		nextChar = textStream.get();
@@ -103,7 +123,8 @@ void Lexer::consumeStringLiteral() {
 		}
 	}
 
-	interpreter.tokenStream.addToken(content.str(), Token::TokenType::STRING);
+	interpreter.tokenStream.addToken(resolveString(content.str()),
+		Token::TokenType::STRING);
 }
 
 void Lexer::consumeOperator() {
@@ -123,7 +144,6 @@ void Lexer::consumeOperator() {
 
 		if (!interpreter.operatorRegistry.isValidOperator(content.str() + nextChar)) {
 			// TODO: check here to make sure current formed token is a valid operator and throw error otherwise
-
 			if (isPossibleOperator(nextChar)
 					&& !interpreter.operatorRegistry.isValidOperatorChar(nextChar)) {
 				errorNextChar("valid operator symbol");
@@ -198,4 +218,19 @@ bool Lexer::isStringLiteral(char chr) {
 
 bool Lexer::isPossibleOperator(char chr) {
 	return ispunct(chr) && !isStringLiteral(chr) && chr != '.';
+}
+
+std::string Lexer::resolveString(const std::string& str) {
+	std::stringstream ss;
+
+	for (int i = 0, l = str.length() - 1; i < l; ++i) {
+		if (str[i] == '\\') {
+			ss << getControlChar(str[++i]);
+		}
+		else {
+			ss << str[i];
+		}
+	}
+
+	return ss.str();
 }
