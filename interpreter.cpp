@@ -50,6 +50,8 @@ Interpreter::Interpreter(std::istream& textStream, bool useDefaultLib)
 	if (useDefaultLib) {
 		defaultLib = std::make_unique<DefaultLibrary>(*this);
 	}
+
+	//errorLog.setLogDepth(ErrorLog::LogDepth::DEBUG);
 }
 
 bool Interpreter::isRunning() const {

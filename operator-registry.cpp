@@ -22,6 +22,10 @@ void OperatorRegistry::init() {
 	addOperator(">");
 	addOperator("<=");
 	addOperator(">=");
+
+	addOperator("not");
+	addOperator("and");
+	addOperator("or");
 }
 
 bool OperatorRegistry::isValidOperatorChar(char chr) const {
@@ -36,6 +40,9 @@ void OperatorRegistry::applyOperator(const std::string& op, const Variable& var,
 		Variable& out) const {
 	if (op.compare("-") == 0) {
 		Variable::unaryMinus(var, out);
+	}
+	else if (op.compare("not") == 0) {
+		Variable::logicalNot(var, out);
 	}
 }
 
@@ -76,6 +83,12 @@ void OperatorRegistry::applyOperator(const std::string& op, const Variable& lhs,
 	else if (op.compare(">=") == 0) {
 		Variable::lessEq(rhs, lhs, out);
 	}
+	else if (op.compare("and") == 0) {
+		Variable::logicalAnd(lhs, rhs, out);
+	}
+	else if (op.compare("or") == 0) {
+		Variable::logicalOr(lhs, rhs, out);
+	}
 
 }
 
@@ -98,6 +111,10 @@ inline void OperatorRegistry::addOperator(const std::string& token) {
 }
 
 inline int OperatorRegistry::getOperatorLevel(const std::string& op) const {
+	if (op.compare("and") == 0 || op.compare("or") == 0) {
+		return 3;
+	}
+	
 	if (op.compare("==") == 0 || op.compare("!=") == 0 || op.compare("<") == 0
 			|| op.compare(">") == 0 || op.compare(">=") == 0 || op.compare("<=") == 0) {
 		return 2;

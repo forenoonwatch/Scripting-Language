@@ -34,6 +34,10 @@ void ScopeFrame::writeVarsToVector(std::vector<std::shared_ptr<Variable>>& vec) 
 
 	for (auto it = std::begin(variableMap), end = std::end(variableMap);
 			it != end; ++it) {
+		if (it->second == nullptr) {
+			continue;
+		}
+
 		var = std::make_shared<Variable>();
 		it->second->cloneInto(*var);
 
@@ -96,6 +100,7 @@ void FunctionFrame::evalNextArg() {
 		interpreter.errorLog.logDebug("setting parameter "
 			+ paramName->getContent());
 		addVariable(paramName->getContent(), argVar);
+
 		++paramName;
 	}
 
@@ -111,9 +116,13 @@ int FunctionFrame::getBaseExpression() const {
 }
 
 void FunctionFrame::doExternalCall() {
+	
 	std::vector<std::shared_ptr<Variable>> vArgs;
 	writeVarsToVector(vArgs);
 	std::reverse(std::begin(vArgs), std::end(vArgs));
+
+	interpreter.errorLog.logDebug("number of external args: "
+		+ std::to_string(vArgs.size()));
 
 	std::shared_ptr<Variable> returnProxy = std::make_shared<Variable>();
 	

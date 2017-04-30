@@ -51,7 +51,11 @@ class Variable {
 		static void less(const Variable&, const Variable&, Variable&);
 		static void lessEq(const Variable&, const Variable&, Variable&);
 
+		static void logicalAnd(const Variable&, const Variable&, Variable&);
+		static void logicalOr(const Variable&, const Variable&, Variable&);
+
 		static void unaryMinus(const Variable&, Variable&);
+		static void logicalNot(const Variable&, Variable&);
 
 		static std::string toString(const Variable&);
 

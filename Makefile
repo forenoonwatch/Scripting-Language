@@ -1,5 +1,7 @@
 # Makefile for scripting language project; intended for GCC
-PROJECT		:= script_lang
+PROJECT		:= lits
+
+RUN_ARGS	:=
 
 CXX			:= g++
 CXXFLAGS	:= -std=c++14 -c
@@ -17,7 +19,7 @@ build: gen_bin $(output_file)
 
 run:
 	@echo "Running $(PROJECT)..."
-	@./"$(output_file)"
+	@./"$(output_file)" $(RUN_ARGS)
 
 rebuild: clean build
 

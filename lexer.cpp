@@ -77,7 +77,12 @@ void Lexer::consumeIdentifier() {
 	}
 	while (canConsumeToken() && isIdentifier(textStream.peek()));
 
-	interpreter.tokenStream.addToken(content.str(), Token::TokenType::IDENTIFIER);
+	if (interpreter.operatorRegistry.isValidOperator(content.str())) {
+		interpreter.tokenStream.addToken(content.str(), Token::TokenType::OPERATOR);
+	}
+	else {
+		interpreter.tokenStream.addToken(content.str(), Token::TokenType::IDENTIFIER);
+	}
 }
 
 void Lexer::consumeNumericLiteral(bool isNegative) {

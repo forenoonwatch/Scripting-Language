@@ -109,7 +109,8 @@ void Expression::evalNext() {
 			interpreter.errorLog.logDebug("loaded unary operator");
 		}
 		else {
-			interpreter.errorLog.logDebug("loaded binary operator");
+			interpreter.errorLog.logDebug("loaded binary operator ("
+				+ it->getContent() + ")");
 
 			while (!operators.empty()
 					&& interpreter.operatorRegistry.hasPrecedence(it->getContent(), operators.top())) {
@@ -135,6 +136,17 @@ void Expression::evalNext() {
 }
 
 void Expression::finishEval() {
+	while (!unaryOps.empty()) {
+		Variable v = values.top();
+		values.pop();
+
+		Variable out;
+		interpreter.operatorRegistry.applyOperator(unaryOps.top(), v, out);
+		values.push(out);
+
+		unaryOps.pop();
+	}
+
 	while (!operators.empty()) {
 		Variable v1 = values.top();
 		values.pop();

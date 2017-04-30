@@ -13,8 +13,16 @@ fun f(a)
 end
 
 --let z = fib(5)--fib(3)
-yield()
+--yield()
+let z = 5
 print("Hello world")
-sleep(1)
+
+let cnd = z == 5 and fib(4) == 3
+
+if cnd then
+	sleep(1)
+	print("z is 5 and fib(4) is 3")
+end
+
 print("goodbye world")
 --let z = add(f(2), 7, 5, 6, 8, "a\nstring")

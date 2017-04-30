@@ -363,6 +363,50 @@ void Variable::lessEq(const Variable& a, const Variable& b, Variable& out) {
 	}
 }
 
+void Variable::logicalAnd(const Variable& a, const Variable& b, Variable& out) {
+	out.type = VariableType::BOOL;
+
+	if (a.type == VariableType::BOOL) {
+		if (b.type == VariableType::BOOL) {
+			out.boolValue = a.boolValue && b.boolValue;
+		}
+		else {
+			out.boolValue = a.boolValue && b.type != VariableType::NIL;
+		}
+	}
+	else {
+		if (b.type == VariableType::BOOL) {
+			out.boolValue = a.type != VariableType::NIL && b.boolValue;
+		}
+		else {
+			out.boolValue = a.type != VariableType::NIL
+				&& b.type != VariableType::NIL;
+		}
+	}
+}
+
+void Variable::logicalOr(const Variable& a, const Variable& b, Variable& out) {
+	out.type = VariableType::BOOL;
+
+	if (a.type == VariableType::BOOL) {
+		if (b.type == VariableType::BOOL) {
+			out.boolValue = a.boolValue || b.boolValue;
+		}
+		else {
+			out.boolValue = a.boolValue || b.type != VariableType::NIL;
+		}
+	}
+	else {
+		if (b.type == VariableType::BOOL) {
+			out.boolValue = a.type != VariableType::NIL || b.boolValue;
+		}
+		else {
+			out.boolValue = a.type != VariableType::NIL
+				|| b.type != VariableType::NIL;
+		}
+	}
+}
+
 void Variable::unaryMinus(const Variable& var, Variable& out) {
 	if (var.type == VariableType::INT) {
 		out.intValue = -var.intValue;
@@ -374,6 +418,17 @@ void Variable::unaryMinus(const Variable& var, Variable& out) {
 	}
 	else {
 		// TODO: runtime error
+	}
+}
+
+void Variable::logicalNot(const Variable& var, Variable& out) {
+	out.type = VariableType::BOOL;
+
+	if (var.type == VariableType::BOOL) {
+		out.boolValue = !var.boolValue;
+	}
+	else {
+		out.boolValue = var.type != VariableType::NIL;
 	}
 }
 

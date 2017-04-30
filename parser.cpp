@@ -490,7 +490,7 @@ void Parser::consumeFunctionCall() {
 
 	while (!acceptToken(nextToken, ")")) {
 		if (acceptToken(nextToken, Token::TokenType::IDENTIFIER | Token::TokenType::NUMERIC
-				| Token::TokenType::STRING)) {
+				| Token::TokenType::STRING | Token::TokenType::OPERATOR)) {
 			consumeExpression(); // consume (first) expression
 		}
 		else if (acceptToken(nextToken, ",")) {
