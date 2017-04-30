@@ -35,7 +35,6 @@ void ScopeFrame::writeVarsToVector(std::vector<std::shared_ptr<Variable>>& vec) 
 	for (auto it = std::begin(variableMap), end = std::end(variableMap);
 			it != end; ++it) {
 		var = std::make_shared<Variable>();
-		std::cout << (it->second != nullptr ? "true" : "false") << std::endl;
 		it->second->cloneInto(*var);
 
 		vec.push_back(var);
@@ -89,11 +88,13 @@ void FunctionFrame::evalNextArg() {
 	interpreter.evalExpression(*arg, argVar, 1);
 
 	if (isExternalFunction()) {
-		std::cout << "setting parameter arg" << std::to_string(argEnd - arg) << std::endl;
+		interpreter.errorLog.logDebug("setting parameter arg"
+			+ std::to_string(argEnd - arg));
 		addVariable("arg" + std::to_string(argEnd - arg), argVar);
 	}
 	else {
-		std::cout << "setting parameter " << paramName->getContent() << std::endl;
+		interpreter.errorLog.logDebug("setting parameter "
+			+ paramName->getContent());
 		addVariable(paramName->getContent(), argVar);
 		++paramName;
 	}

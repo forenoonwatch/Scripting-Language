@@ -1,6 +1,5 @@
 #include "interpreter.hpp"
 #include <iostream>
-#include <stack>
 
 namespace {
 	void printAllChildren(Statement* st, int depth = 0) {
@@ -42,8 +41,7 @@ namespace {
 Interpreter::Interpreter(std::istream& textStream)
 : lexer(std::make_unique<Lexer>(textStream, *this)),
 	parser(std::make_unique<Parser>(*this)), canContinue(true), evaluateExpression(false),
-	returnProxy(std::make_shared<Variable>())
-{
+	returnProxy(std::make_shared<Variable>()), scriptYielded(false) {
 	operatorRegistry.init();
 }
 
@@ -52,7 +50,7 @@ bool Interpreter::isRunning() const {
 }
 
 bool Interpreter::hasScriptEvents() const {
-	return canContinue;
+	return canInterpretStatement();
 }
 
 void Interpreter::processScript() {
@@ -62,14 +60,7 @@ void Interpreter::processScript() {
 }
 
 void Interpreter::interpretNextStatement() {
-	/*
-		Interpreting strategy:
-
-		- interpretNext() is called by user which interprets all statements until program is paused or yielded
-		- 
-	*/
-
-	std::cout << "---" << std::endl;
+	errorLog.logDebug("---");
 
 	std::shared_ptr<ScopeFrame> currScope = scopeStack.back();
 	
@@ -81,7 +72,7 @@ void Interpreter::interpretNextStatement() {
 			std::shared_ptr<Expression> exp = expressionStack.back();
 
 			if (!exp->isExpectingValue()) {
-				std::cout << "evaluating expressions" << std::endl;
+				errorLog.logDebug("evaluating expressions");
 
 				while (evaluateExpression && exp->canEval() && !exp->isExpectingValue()) {
 					exp->evalNext();
@@ -89,10 +80,11 @@ void Interpreter::interpretNextStatement() {
 
 				if (!exp->canEval()) {
 					exp->finishEval();
-					std::cout << "finishing and popping expression ("
-						<< (expressionStack.size() - 1) << ")" << std::endl;
+					errorLog.logDebug("finishing and popping expression ("
+						+ std::to_string(expressionStack.size() - 1) + ")");
 
-					evaluateExpression = !expressionStack.empty() && expressionStack.back()->canEval();
+					evaluateExpression = !expressionStack.empty()
+						&& expressionStack.back()->canEval();
 					expressionStack.pop_back();
 					
 					cleanAfterExpression();
@@ -107,13 +99,13 @@ void Interpreter::interpretNextStatement() {
 		std::shared_ptr<FunctionFrame> func = std::static_pointer_cast<FunctionFrame>(currScope);
 
 		if (func->canEvalArg()) {
-			std::cout << "Evaluating argument" << std::endl;
+			errorLog.logDebug("Evaluating argument");
 			func->evalNextArg();
 			return;
 		}
 		else {
 			if (func->isExternalFunction()) {
-				std::cout << "Calling external function" << std::endl;
+				errorLog.logDebug("Calling external function");
 
 				func->doExternalCall();
 				func->getReturnValue().cloneInto(*returnProxy);
@@ -131,10 +123,10 @@ void Interpreter::interpretNextStatement() {
 	while (canContinue && !currScope->canGetStatement()) {
 		if (scopeStack.size() > 1) {
 			scopeStack.pop_back();
-			std::cout << "popping scope" << std::endl;
+			errorLog.logDebug("popping scope");
 		}
 		else {
-			std::cout << "left to just root scope; stopping" << std::endl;
+			errorLog.logDebug("left to just root scope; stopping");
 			canContinue = false;
 			return;
 		}
@@ -152,32 +144,32 @@ void Interpreter::interpretNextStatement() {
 	Statement* stmnt = currScope->getStatement();
 
 	if (stmnt->getType() == Statement::StatementType::VAR_DECLARATION) {
-		std::cout << "interpreting var delcaration" << std::endl;
+		errorLog.logDebug("interpreting var delcaration");
 		interpretVarDecl(stmnt);
 	}
 	else if (stmnt->getType() == Statement::StatementType::VAR_ASSIGNMENT) {
-		std::cout << "interpreting var assignment" << std::endl;
+		errorLog.logDebug("interpreting var assignment");
 		interpretVarAssignment(stmnt);
 	}
 	else if (stmnt->getType() == Statement::StatementType::CONDITIONAL) {
-		std::cout << "interpreting conditional" << std::endl;
+		errorLog.logDebug("interpreting conditional");
 		interpretIfStatement(stmnt);
 	}
 	else if (stmnt->getType() == Statement::StatementType::FUNC_DECL) {
-		std::cout << "interpreting function declaration" << std::endl;
+		errorLog.logDebug("interpreting function declaration");
 		interpretFuncDecl(stmnt);
 	}
 	else if (stmnt->getType() == Statement::StatementType::RETURN) {
-		std::cout << "interpreting return statemenet" << std::endl;
+		errorLog.logDebug("interpreting return statement");
 		interpretReturn(stmnt);
 	}
 	else {
-		std::cout << "skipping " << Statement::typeAsString(stmnt->getType()) << std::endl;
+		errorLog.logDebug("skipping " + Statement::typeAsString(stmnt->getType()));
 	}
 }
 
 bool Interpreter::canInterpretStatement() const {
-	return canContinue;
+	return canContinue && !scriptYielded;
 }
 
 void Interpreter::addExternalFunc(const std::string& name, ExternalFunction func) {
@@ -194,14 +186,17 @@ void Interpreter::parseText() {
 
 	scopeStack.push_back(std::make_shared<ScopeFrame>(parser->root));
 
-	printAllChildren(parser->root);
-	std::cout << "\nSTART OF SCRIPT" << std::endl;
+	if (errorLog.getLogDepth() >= ErrorLog::LogDepth::DEBUG) {
+		printAllChildren(parser->root);
+	}
+	
+	errorLog.logDebug("\nSTART OF SCRIPT");
 }
 
 void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable> var,
 		int startOffset) {
-	std::cout << "pushing expression onto stack ("
-		<< (expressionStack.size() + 1) << ")" << std::endl;
+	errorLog.logDebug("pushing expression onto stack ("
+		+ std::to_string(expressionStack.size() + 1) + ")");
 
 	std::shared_ptr<Expression> expr = std::make_shared<Expression>(*this, expression, var, startOffset);
 	expressionStack.push_back(expr);
@@ -214,8 +209,8 @@ void Interpreter::evalExpression(Statement* expression, std::shared_ptr<Variable
 
 		if (!expr->canEval()) {
 			expr->finishEval();
-			std::cout << "finishing and popping expression ("
-						<< (expressionStack.size() - 1) << ")" << std::endl;
+			errorLog.logDebug("finishing and popping expression ("
+				+ std::to_string(expressionStack.size() - 1) + ")");
 
 			evaluateExpression = !expressionStack.empty() && expressionStack.back()->canEval();
 			expressionStack.pop_back();
@@ -259,7 +254,7 @@ void Interpreter::interpretIfStatement(Statement* statement) {
 	auto it = std::begin(statement->getTokens());
 
 	if (it->getContent().compare("if") != 0) {
-		std::cout << "skipping elif or else" << std::endl;
+		errorLog.logDebug("skipping elif or else");
 		return; // skip elif and else statements ; TODO: pop scope
 	}
 	
@@ -270,7 +265,7 @@ void Interpreter::interpretIfStatement(Statement* statement) {
 	evalExpression(statement->getChildren()[0], condVar);
 
 	if (condVar->boolValue) {
-		std::cout << "found sucessful first if" << std::endl;
+		errorLog.logDebug("found sucessful first if");
 		scopeStack.push_back(std::make_shared<ScopeFrame>(statement));
 
 		return;
@@ -290,18 +285,18 @@ void Interpreter::interpretIfStatement(Statement* statement) {
 		evalExpression(condition->getChildren()[0], condVar);
 
 		if (condVar->boolValue) {
-			std::cout << "found successful statement" << std::endl;
+			errorLog.logDebug("found successful statement");
 			scopeStack.push_back(std::make_shared<ScopeFrame>(condition));
 
 			return;
 		}
 		else {
-			std::cout << "attempting another statement" << std::endl;
+			errorLog.logDebug("attempting another statement");
 		}
 	}
 
 	if (elseStatement != nullptr) {
-		std::cout << "defaulting to else statement" << std::endl;
+		errorLog.logDebug("defaulting to else statement");
 		scopeStack.push_back(std::make_shared<ScopeFrame>(elseStatement));
 	}
 }
@@ -313,13 +308,13 @@ void Interpreter::interpretFuncDecl(Statement* statement) {
 
 void Interpreter::interpretReturn(Statement* statement) {
 	if (scopeStack.size() == 1) {
-		std::cout << "ERROR: trying to return in global scope" << std::endl; // TODO: proper error or have this
+		errorLog.logError("ERROR: trying to return in global scope"); // TODO: proper error or have this
 		// be script return value
 		return;
 	}
 
 	if (functionStack.empty()) {
-		std::cout << "ERROR: no function found to return from" << std::endl;
+		errorLog.logError("ERROR: no function found to return from");
 		return;
 	}
 
@@ -327,7 +322,8 @@ void Interpreter::interpretReturn(Statement* statement) {
 
 	func->setBaseExpression(expressionStack.size());
 	func->setReturning();
-	std::cout << "flagging return with halt level = " << expressionStack.size() << std::endl;
+	errorLog.logDebug("flagging return with halt level = "
+		+ std::to_string(expressionStack.size()));
 
 	evalExpression(statement->getChildren()[0], returnProxy);
 }
@@ -361,12 +357,12 @@ void Interpreter::cleanAfterExpression() {
 
 		if (func->getIsReturning()
 				&& expressionStack.size() <= func->getBaseExpression()) {
-			std::cout << "Return statement expression is finished" << std::endl;
+			errorLog.logDebug("Return statement expression is finished");
 			
-			std::cout << "cleaning function frames" << std::endl;
+			errorLog.logDebug("cleaning function frames");
 			
 			while (!scopeStack.back()->isFunction()) {
-				std::cout << "\tcleaned scope" << std::endl;
+				errorLog.logDebug("\tcleaned scope");
 				scopeStack.pop_back();
 			}
 
@@ -375,11 +371,11 @@ void Interpreter::cleanAfterExpression() {
 			if (exp->isExpectingValue()) {
 				exp->addValue(*returnProxy);
 				evaluateExpression = true;
-				std::cout << "loaded return value: "
-					<< Variable::toString(*returnProxy) << std::endl;
+				errorLog.logDebug("loaded return value: "
+					+ Variable::toString(*returnProxy));
 			}
 
-			std::cout << "popping function scope" << std::endl;
+			errorLog.logDebug("popping function scope");
 			scopeStack.pop_back();
 			functionStack.pop_back();
 		}
@@ -407,4 +403,12 @@ inline void Interpreter::parseAllStatements() {
 	if (parser->hasErrored()) {
 		canContinue = false;
 	}
+}
+
+bool Interpreter::isYielded() const {
+	return scriptYielded;
+}
+
+void Interpreter::setYielded(bool yielded) {
+	scriptYielded = yielded;
 }

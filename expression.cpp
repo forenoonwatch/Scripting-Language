@@ -44,7 +44,7 @@ void Expression::evalNext() {
 			std::shared_ptr<Variable> funcVar = interpreter.resolveVariable(it->getLink()
 				->getTokens()[0].getContent(), startOffset);
 
-			std::cout << "interpreting function call" << std::endl;
+			interpreter.errorLog.logDebug("interpreting function call");
 
 			if (funcVar != nullptr
 					&& (funcVar->type == Variable::VariableType::FUNCTION
@@ -64,7 +64,7 @@ void Expression::evalNext() {
 				return;
 			}
 			else {
-				std::cout << "invalid function name" << std::endl;
+				interpreter.errorLog.logError("invalid function name");
 				// TODO: runtime error
 			}
 		}
@@ -106,10 +106,10 @@ void Expression::evalNext() {
 		if ((lastToken.getTokenType() == Token::TokenType::OPERATOR || lastToken.getTokenType() == Token::TokenType::OTHER)
 				&& lastToken.getContent().compare("(") != 0 && lastToken.getContent().compare(")") != 0) {
 			unaryOps.push(it->getContent());
-			std::cout << "loaded unary operator" << std::endl;
+			interpreter.errorLog.logDebug("loaded unary operator");
 		}
 		else {
-			std::cout << "loaded binary operator" << std::endl;
+			interpreter.errorLog.logDebug("loaded binary operator");
 
 			while (!operators.empty()
 					&& interpreter.operatorRegistry.hasPrecedence(it->getContent(), operators.top())) {
@@ -149,7 +149,8 @@ void Expression::finishEval() {
 		operators.pop();
 	}
 
-	std::cout << "setting value of " << Variable::toString(values.top()) << std::endl;
+	interpreter.errorLog.logDebug("setting value of "
+		+ Variable::toString(values.top()));
 	*writeVar = std::move(values.top());
 }
 
@@ -158,7 +159,8 @@ void Expression::addValue(const Variable& value) {
 	expectValue = false;
 	++it;
 
-	std::cout << "Added value of " << Variable::toString(value) << "; expression can continue" << std::endl;
+	interpreter.errorLog.logDebug("Added value of " + Variable::toString(value)
+		+ "; expression can continue");
 }
 
 bool Expression::isExpectingValue() const {

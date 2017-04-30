@@ -31,6 +31,9 @@ class Interpreter {
 
 		void processScript();
 
+		bool isYielded() const;
+		void setYielded(bool);
+
 		void addExternalFunc(const std::string& name, ExternalFunction func);
 
 		void createVariable(const std::string& name, const std::string& value);
@@ -54,6 +57,7 @@ class Interpreter {
 		ErrorLog errorLog;
 
 		bool canContinue;
+		bool scriptYielded;
 		bool evaluateExpression;
 
 		std::shared_ptr<Variable> returnProxy;
@@ -89,4 +93,5 @@ class Interpreter {
 		friend class Lexer;
 		friend class Parser;
 		friend class Expression;
+		friend class FunctionFrame;
 };
