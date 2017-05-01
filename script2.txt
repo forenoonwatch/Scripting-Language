@@ -2,6 +2,4 @@ fun add(a, b)
 	return a + b
 end
 
-let x = add(3, 2)
-x = add(-x, 6)
-print(x)
+print(add(2, 3))

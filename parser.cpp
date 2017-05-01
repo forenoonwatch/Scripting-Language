@@ -419,7 +419,8 @@ void Parser::consumeExpression() {
 			++numParens;
 		}
 		else if (acceptToken(nextToken, ")")) {
-			if (currRoot->getParent()->getType() == Statement::StatementType::FUNC_CALL) {
+			if (currRoot->getParent()->getType() == Statement::StatementType::FUNC_CALL
+				&& numParens < 1) {
 				break; // finished parsing
 			}
 
