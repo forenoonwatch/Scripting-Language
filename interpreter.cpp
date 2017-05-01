@@ -66,6 +66,10 @@ bool Interpreter::hasScriptEvents() const {
 	return canInterpretStatement();
 }
 
+void Interpreter::setLogDepth(ErrorLog::LogDepth depth) {
+	errorLog.setLogDepth(depth);
+}
+
 void Interpreter::processScript() {
 	while (canInterpretStatement()) {
 		interpretNextStatement();
@@ -197,9 +201,13 @@ void Interpreter::addExternalFunc(const std::string& name, ExternalFunction func
 void Interpreter::parseText() {
 	lexAllTokens();
 
+	errorLog.logDebug("Finished lexing stage");
+
 	if (canContinue) {
 		parseAllStatements();
 	}
+
+	errorLog.logDebug("Finished parsing stage");
 
 	scopeStack.push_back(std::make_shared<ScopeFrame>(parser->root));
 

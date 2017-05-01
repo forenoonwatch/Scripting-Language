@@ -38,6 +38,8 @@ class Interpreter {
 		bool isYielded() const;
 		void setYielded(bool);
 
+		void setLogDepth(ErrorLog::LogDepth);
+
 		void addExternalFunc(const std::string& name, ExternalFunction func);
 
 		void createVariable(const std::string& name, const std::string& value);

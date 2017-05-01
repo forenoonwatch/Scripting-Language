@@ -12,6 +12,8 @@ fun f(a)
 	return a + 1
 end
 
+print(f(2))
+
 --let z = fib(5)--fib(3)
 --yield()
 let z = 5
@@ -25,4 +27,7 @@ if cnd then
 end
 
 print("goodbye world")
+
+--print(add(a, b))
+
 --let z = add(f(2), 7, 5, 6, 8, "a\nstring")

@@ -1,13 +1,16 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 #include "interpreter.hpp"
 
-void executeFile(const std::string&);
-void editScript();
-void runScriptFromStream(std::stringstream& ss);
+void executeFile(const std::string&, ErrorLog::LogDepth);
+void editScript(ErrorLog::LogDepth);
+void runScriptFromStream(std::stringstream&, ErrorLog::LogDepth);
 
 int main(int argc, char** argv) {
+	ErrorLog::LogDepth depth = ErrorLog::LogDepth::WARNING;
+
 	if (argc > 1) {
 		std::string firstArg(argv[1]);
 
@@ -16,20 +19,47 @@ int main(int argc, char** argv) {
 			std::cout << "Type lits with no arguments to open" << std::endl;
 			std::cout << "the line by line script editor." << std::endl;
 			std::cout << "Or type lits [file name] to run a source file" << std::endl;
+
+			std::cout << "\nFlags:" << std::endl;
+			std::cout << "-f [none|error|warning|debug]\tlets you set the debug output level" << std::endl;
+			std::cout << "-h (--help)\t\t\tshows the help output" << std::endl;
+		}
+		else if (firstArg.find("-f") != std::string::npos) {
+			std::string level = firstArg.substr(2);
+			std::transform(level.begin(), level.end(), level.begin(), ::tolower);
+
+			if (level.compare("none") == 0) {
+				depth = ErrorLog::LogDepth::NONE;
+			}
+			else if (level.compare("error") == 0) {
+				depth = ErrorLog::LogDepth::ERROR;
+			}
+			else if (level.compare("warning") == 0) {
+				depth = ErrorLog::LogDepth::WARNING;
+			}
+			else if (level.compare("debug") == 0) {
+				depth = ErrorLog::LogDepth::DEBUG;
+			}
+
+			if (argc > 2) {
+				executeFile(argv[2], depth);
+			}
+			else {
+				editScript(depth);
+			}
 		}
 		else {
-			executeFile(firstArg);
+			executeFile(firstArg, depth);
 		}
 	}
 	else {
-		// TODO: enter script editor
-		editScript();
+		editScript(depth);
 	}
 
 	return 0;
 }
 
-void executeFile(const std::string& fileName) {
+void executeFile(const std::string& fileName, ErrorLog::LogDepth depth) {
 	std::ifstream inFile(fileName);
 
 	inFile.seekg(0, inFile.end);
@@ -44,6 +74,7 @@ void executeFile(const std::string& fileName) {
 	std::cout << "Running file " << fileName << "..." << std::endl;
 
 	Interpreter terp(inFile);
+	terp.setLogDepth(depth);
 	
 	terp.parseText();
 	inFile.close();
@@ -55,7 +86,7 @@ void executeFile(const std::string& fileName) {
 	}
 }
 
-void editScript() {
+void editScript(ErrorLog::LogDepth depth) {
 	std::cout << "LITS script editor, type 'exit' to quit and run" << std::endl;
 
 	std::string line;
@@ -76,11 +107,13 @@ void editScript() {
 	std::cout << "Running script..." << std::endl;
 
 	ss.flush();
-	runScriptFromStream(ss);
+	runScriptFromStream(ss, depth);
 }
 
-void runScriptFromStream(std::stringstream& stream) {
+void runScriptFromStream(std::stringstream& stream, ErrorLog::LogDepth depth) {
 	Interpreter terp(stream);
+	
+	terp.setLogDepth(depth);
 	terp.parseText();
 
 	while (terp.isRunning()) {

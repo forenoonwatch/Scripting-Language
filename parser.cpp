@@ -490,7 +490,7 @@ void Parser::consumeFunctionCall() {
 
 	while (!acceptToken(nextToken, ")")) {
 		if (acceptToken(nextToken, Token::TokenType::IDENTIFIER | Token::TokenType::NUMERIC
-				| Token::TokenType::STRING | Token::TokenType::OPERATOR)) {
+				| Token::TokenType::STRING)) {
 			consumeExpression(); // consume (first) expression
 		}
 		else if (acceptToken(nextToken, ",")) {
@@ -503,6 +503,9 @@ void Parser::consumeFunctionCall() {
 				errorNextToken("expression");
 				return;
 			}
+		}
+		else if (acceptToken(nextToken, Token::TokenType::OPERATOR)) {
+			consumeExpression(); // consume expression that starts with an op, but not ','
 		}
 		else {
 			errorNextToken("function argument");
