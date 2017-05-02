@@ -30,6 +30,9 @@ double Variable::getAsFloat() const {
 	else if (type == VariableType::BOOL) {
 		return boolValue ? 1 : 0;
 	}
+	else if (type == VariableType::STRING) {
+		return std::atof(stringValue.c_str());
+	}
 	
 	return 0;
 }
@@ -43,6 +46,9 @@ int Variable::getAsInt() const {
 	}
 	else if (type == VariableType::BOOL) {
 		return boolValue ? 1 : 0;
+	}
+	else if (type == VariableType::STRING) {
+		return std::atoi(stringValue.c_str());
 	}
 	
 	return 0;

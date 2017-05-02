@@ -26,6 +26,30 @@ class DefaultLibrary {
 			std::shared_ptr<Variable>, Interpreter&);
 
 		/**
+		 * get_input(void) -> String
+		 *
+		 * Pauses for input and returns the string received
+		 */
+		static void getInput(std::vector<std::shared_ptr<Variable>>&,
+			std::shared_ptr<Variable>, Interpreter&);
+
+		/**
+		 * to_string(var) -> String
+		 *
+		 * Gets the string representation of a variable
+		 */
+		static void toString(std::vector<std::shared_ptr<Variable>>&,
+			std::shared_ptr<Variable>, Interpreter&);
+		
+		/**
+		 * to_number(var) -> float
+		 *
+		 * Gets the numerical representation of a variable
+		 */
+		static void toNumber(std::vector<std::shared_ptr<Variable>>&,
+			std::shared_ptr<Variable>, Interpreter&);
+
+		/**
 		 * yield(void) -> void
 		 *
 		 * Yields the script interpreter for one frame

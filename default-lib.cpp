@@ -18,9 +18,17 @@ namespace Time {
 DefaultLibrary::DefaultLibrary(Interpreter& interpreter): interpreter(interpreter) {}
 
 void DefaultLibrary::loadExternalFunctions() {
+	// IO functions
 	interpreter.addExternalFunc("print", print);
+	interpreter.addExternalFunc("get_input", getInput);
+
+	// Thread functions
 	interpreter.addExternalFunc("yield", yield);
 	interpreter.addExternalFunc("sleep", sleep);
+
+	// General purpose functions
+	interpreter.addExternalFunc("to_string", toString);
+	interpreter.addExternalFunc("to_number", toNumber);
 }
 
 void DefaultLibrary::update() {
@@ -40,6 +48,30 @@ void DefaultLibrary::print(std::vector<std::shared_ptr<Variable>>& args,
 	}
 
 	std::cout << ss.str() << std::endl;
+}
+
+void DefaultLibrary::getInput(std::vector<std::shared_ptr<Variable>>&,
+		std::shared_ptr<Variable> out, Interpreter&) {
+	out->type = Variable::VariableType::STRING;
+	std::getline(std::cin, out->stringValue);
+}
+
+void DefaultLibrary::toString(std::vector<std::shared_ptr<Variable>>& args,
+		std::shared_ptr<Variable> out, Interpreter&) {
+	out->type = Variable::VariableType::STRING;
+	out->stringValue = Variable::toString(*args[0]);
+}
+
+void DefaultLibrary::toNumber(std::vector<std::shared_ptr<Variable>>& args,
+		std::shared_ptr<Variable> out, Interpreter&) {
+	if (args[0]->type == Variable::VariableType::INT) {
+		out->type = Variable::VariableType::INT;
+		out->intValue = args[0]->intValue;
+	}
+	else {
+		out->type = Variable::VariableType::FLOAT;
+		out->floatValue = args[0]->getAsFloat();
+	}
 }
 
 void DefaultLibrary::yield(std::vector<std::shared_ptr<Variable>>&,
